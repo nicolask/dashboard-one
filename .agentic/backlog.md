@@ -15,6 +15,7 @@
 - document SQLite to PostgreSQL migration caveats for IDs, text handling, and indexes
 - replace the demo-user bootstrap with a real first-user onboarding or admin creation path
 - document Prisma 7 upgrade and regeneration workflow for future agents once more database code exists
+- revisit category and top-product query strategy if demo data volume grows beyond the current in-memory aggregation approach
 
 ## Later
 

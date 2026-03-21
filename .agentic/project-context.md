@@ -26,7 +26,11 @@ It also serves as a lightweight reference project for evaluating agentic coding 
 - public login placeholder route at `/login`
 - public login route at `/login` backed by a local credentials flow
 - protected dashboard route at `/dashboard`
+- retail BI schema added to Prisma for stores, catalog, orders, daily metrics, traffic, and scenario-tagged alerts
+- deterministic retail seed simulator added under `prisma/seed.ts`
+- dashboard overview now shows KPI tiles, store ranking, category mix, top products, and an alert panel
 - shared UI and layout components under `src/components`
+- dashboard-specific UI components live under `src/features/dashboard`
 - domain-first expansion path documented under `src/features`
 - shared infrastructure area documented under `src/lib`
 - dependencies installed with npm
@@ -34,6 +38,8 @@ It also serves as a lightweight reference project for evaluating agentic coding 
 - Vitest and React Testing Library configured for unit and component tests
 - Prisma 7 configured with `prisma.config.ts`, explicit client generation, and a SQLite driver adapter
 - first `User` model added for local-auth-first development
+- retail KPI query helpers added under `src/lib/kpi`
+- KPI date/calculation and formatting helpers covered by unit tests
 - local credentials login implemented with a signed session cookie
 - demo user seed script added for local development
 
@@ -45,6 +51,7 @@ It also serves as a lightweight reference project for evaluating agentic coding 
 - keep persistence access behind a shared Prisma client under `src/lib/db`
 - prefer explicit generated-client imports and adapter-backed database access over legacy implicit Prisma setup
 - keep the first auth flow intentionally small: local password verification plus cookie session, without introducing a full auth library yet
+- prefer pre-aggregated daily metrics for top-level dashboard KPIs and reserve order-level reads for drilldowns
 - prefer local persistence for dashboard reads when integrating external systems
 - avoid introducing a separate NoSQL database until a real need appears
 

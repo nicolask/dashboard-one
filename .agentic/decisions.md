@@ -69,3 +69,15 @@ This keeps the visual language reusable as more dashboard components are added, 
 Replaced the local truthy-string join helper with a `clsx` plus `tailwind-merge` wrapper before more shared UI components depend on `className` overrides.
 
 This keeps component composition ergonomic while preventing conflicting Tailwind utilities from accumulating silently as the UI surface grows. The added dependency cost is small, and making the change early avoids a noisier migration later.
+
+### Retail BI demo data uses a deterministic Prisma seed
+
+Added a seeded retail simulator under `prisma/seed.ts` that creates stores, categories, products, daily metrics, orders, and scenario-tagged anomalies from a fixed seed value.
+
+This gives the dashboard a reproducible demo dataset for local development and reviews. The tradeoff is that demo realism is limited by the scripted heuristics, but the repeatability is more valuable at this stage.
+
+### Dashboard KPIs read from pre-aggregated daily metrics, not live order joins
+
+Implemented the KPI query layer so revenue, orders, average basket, conversion, rankings, and alerts read primarily from `DailyStoreMetric`, while category and top-product drilldowns still use order-level data.
+
+This keeps top-level dashboard reads simple and fast for the intended BI workflow, while preserving order detail where drilldowns actually need it. The tradeoff is that seed and aggregation consistency matter more, so KPI checks and query boundaries should stay explicit.
