@@ -53,8 +53,8 @@ export async function DashboardFrame({
                 <p className="mt-3 max-w-3xl text-base leading-7 text-ink-700">{description}</p>
               </div>
 
-              <div className="flex items-center gap-3 self-start rounded-2xl border border-ink-200 bg-white/80 px-4 py-3 text-sm text-ink-700">
-                <div>
+              <div className="flex items-center gap-4 self-start rounded-[1.75rem] border border-ink-200 bg-white/85 px-5 py-4 text-sm text-ink-700 shadow-[0_12px_28px_rgb(15_23_42_/_0.06)]">
+                <div className="min-w-0">
                   <p className="font-medium text-ink-900">
                     {user?.displayName ?? user?.email ?? "Signed in"}
                   </p>
@@ -62,7 +62,7 @@ export async function DashboardFrame({
                 </div>
                 <form action={logout}>
                   <button
-                    className="rounded-full border border-ink-200 px-3 py-2 font-medium text-ink-900 transition hover:border-brand-300 hover:bg-brand-50"
+                    className="whitespace-nowrap rounded-full border border-brand-300 bg-brand-100 px-4 py-2.5 font-medium text-ink-900 shadow-[0_8px_20px_rgb(8_145_178_/_0.08)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-brand-500 hover:bg-brand-500 hover:text-white hover:shadow-[0_16px_30px_rgb(8_145_178_/_0.18)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
                     type="submit"
                   >
                     Sign out

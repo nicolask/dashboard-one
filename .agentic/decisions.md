@@ -51,3 +51,9 @@ This gives the project a real end-to-end auth path without forcing a full Auth.j
 For this repository, the default should be to choose current stable dependency versions and modern runtime baselines instead of older majors picked for short-term convenience.
 
 Because the project is intentionally greenfield and also serves as an agentic-coding reference, avoid opportunistic major-version downgrades unless there is a clear compatibility reason and that reason is documented.
+
+### Shared UI interaction guidance lives in `.agentic/ui-guidelines.md`
+
+Captured the current button, link, hover, focus, motion, and contrast choices in `.agentic/ui-guidelines.md`.
+
+This keeps the visual language reusable as more dashboard components are added, without turning the early project into a heavy design system too soon.
