@@ -61,6 +61,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
 
   return (
     <DashboardFrame
+      activePath="/dashboard"
       eyebrow="Store Detail"
       title={store.name}
       description="Drill into store-scoped KPIs, benchmark performance, top products, and active alerts for a single location."

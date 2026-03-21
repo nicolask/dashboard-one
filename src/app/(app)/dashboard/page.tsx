@@ -81,6 +81,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
   return (
     <DashboardFrame
+      activePath="/dashboard"
       eyebrow="Dashboard"
       title="Retail performance overview"
       description="A first retail BI snapshot built on seeded store metrics, with server-side KPI queries and a URL-driven day range for comparing recent performance."

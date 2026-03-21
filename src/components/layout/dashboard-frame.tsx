@@ -8,13 +8,22 @@ type DashboardFrameProps = {
   title: string;
   description: string;
   children: React.ReactNode;
+  activePath?: string;
 };
+
+const navLinks = [
+  { href: "/dashboard", label: "Overview" },
+  { href: "/users", label: "Users" },
+  { href: "/integrations", label: "Integrations" },
+  { href: "/settings", label: "Settings" },
+];
 
 export async function DashboardFrame({
   eyebrow,
   title,
   description,
   children,
+  activePath,
 }: DashboardFrameProps) {
   const user = await getCurrentUser();
 
@@ -30,12 +39,20 @@ export async function DashboardFrame({
               <h2 className="mt-2 text-xl font-semibold text-ink-900">Navigation</h2>
             </div>
             <nav className="space-y-2 text-sm text-ink-700">
-              <Link className="block rounded-2xl bg-brand-100 px-4 py-3 text-ink-900" href="/dashboard">
-                Overview
-              </Link>
-              <div className="rounded-2xl px-4 py-3">Users</div>
-              <div className="rounded-2xl px-4 py-3">Integrations</div>
-              <div className="rounded-2xl px-4 py-3">Settings</div>
+              {navLinks.map(({ href, label }) => (
+                <Link
+                  className={[
+                    "block rounded-2xl px-4 py-3 transition-colors",
+                    activePath === href
+                      ? "bg-brand-100 text-ink-900"
+                      : "text-ink-700 hover:bg-white/60 hover:text-ink-900",
+                  ].join(" ")}
+                  href={href}
+                  key={href}
+                >
+                  {label}
+                </Link>
+              ))}
             </nav>
           </div>
         </aside>
