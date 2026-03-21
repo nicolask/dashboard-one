@@ -1,12 +1,16 @@
 import { DashboardFrame } from "@/components/layout/dashboard-frame";
 import { Card } from "@/components/ui/card";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
+import { CategoryPerformanceList } from "@/features/dashboard/CategoryPerformanceList";
 import { KpiCard } from "@/features/dashboard/KpiCard";
 import { StoreRankingTable } from "@/features/dashboard/StoreRankingTable";
+import { TopProductsTable } from "@/features/dashboard/TopProductsTable";
 import {
   getAvgBasketKpi,
+  getCategoryPerformance,
   getConversionKpi,
   getOrdersKpi,
+  getTopProducts,
   getRevenueKpi,
   getStoreRanking,
   formatBasket,
@@ -48,12 +52,15 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const params = await searchParams;
   const days = parseDays(params?.days);
 
-  const [revenue, orders, basket, conversion, storeRanking] = await Promise.all([
+  const [revenue, orders, basket, conversion, storeRanking, categoryPerformance, topProducts] =
+    await Promise.all([
     getRevenueKpi(days),
     getOrdersKpi(days),
     getAvgBasketKpi(days),
     getConversionKpi(days),
     getStoreRanking(days),
+    getCategoryPerformance(days),
+    getTopProducts(days),
   ]);
 
   return (
@@ -99,6 +106,11 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
 
         <StoreRankingTable entries={storeRanking} />
+
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+          <CategoryPerformanceList entries={categoryPerformance} />
+          <TopProductsTable entries={topProducts} />
+        </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">
