@@ -1,5 +1,6 @@
 import { DashboardFrame } from "@/components/layout/dashboard-frame";
 import { Card } from "@/components/ui/card";
+import { AlertPanel } from "@/features/dashboard/AlertPanel";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
 import { CategoryPerformanceList } from "@/features/dashboard/CategoryPerformanceList";
 import { KpiCard } from "@/features/dashboard/KpiCard";
@@ -7,6 +8,7 @@ import { StoreRankingTable } from "@/features/dashboard/StoreRankingTable";
 import { TopProductsTable } from "@/features/dashboard/TopProductsTable";
 import {
   getAvgBasketKpi,
+  getActiveAlerts,
   getCategoryPerformance,
   getConversionKpi,
   getOrdersKpi,
@@ -52,16 +54,26 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   const params = await searchParams;
   const days = parseDays(params?.days);
 
-  const [revenue, orders, basket, conversion, storeRanking, categoryPerformance, topProducts] =
+  const [
+    revenue,
+    orders,
+    basket,
+    conversion,
+    alerts,
+    storeRanking,
+    categoryPerformance,
+    topProducts,
+  ] =
     await Promise.all([
-    getRevenueKpi(days),
-    getOrdersKpi(days),
-    getAvgBasketKpi(days),
-    getConversionKpi(days),
-    getStoreRanking(days),
-    getCategoryPerformance(days),
-    getTopProducts(days),
-  ]);
+      getRevenueKpi(days),
+      getOrdersKpi(days),
+      getAvgBasketKpi(days),
+      getConversionKpi(days),
+      getActiveAlerts(30),
+      getStoreRanking(days),
+      getCategoryPerformance(days),
+      getTopProducts(days),
+    ]);
 
   return (
     <DashboardFrame
@@ -104,6 +116,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             value={formatConversion(conversion.value)}
           />
         </div>
+
+        <AlertPanel alerts={alerts} />
 
         <StoreRankingTable entries={storeRanking} />
 
