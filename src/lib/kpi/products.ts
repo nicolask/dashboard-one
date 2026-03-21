@@ -10,12 +10,17 @@ export type TopProductEntry = {
   unitsSold: number;
 };
 
-export async function getTopProducts(days: number, limit = 10): Promise<TopProductEntry[]> {
+export async function getTopProducts(
+  days: number,
+  storeId?: string,
+  limit = 10,
+): Promise<TopProductEntry[]> {
   const { current } = buildDateRanges(days);
 
   const orderItems = await prisma.orderItem.findMany({
     where: {
       order: {
+        ...(storeId ? { storeId } : {}),
         orderedAt: {
           gte: current.from,
           lte: current.to,

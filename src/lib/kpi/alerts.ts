@@ -11,11 +11,12 @@ export type AlertEntry = {
   conversionRate: number;
 };
 
-export async function getActiveAlerts(days: number): Promise<AlertEntry[]> {
+export async function getActiveAlerts(days: number, storeId?: string): Promise<AlertEntry[]> {
   const { current } = buildDateRanges(days);
 
   const alerts = await prisma.dailyStoreMetric.findMany({
     where: {
+      ...(storeId ? { storeId } : {}),
       date: {
         gte: current.from,
         lte: current.to,
