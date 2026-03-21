@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { formatBasket, formatConversion, formatOrders, formatRevenue } from "@/lib/kpi/format";
 import type { StoreRankingEntry } from "@/lib/kpi";
@@ -28,6 +29,7 @@ export function StoreRankingTable({ entries }: StoreRankingTableProps) {
               <th className="px-6 py-4 font-medium">Orders</th>
               <th className="px-6 py-4 font-medium">Avg Basket</th>
               <th className="px-6 py-4 font-medium">Conversion</th>
+              <th className="px-6 py-4 font-medium">Details</th>
             </tr>
           </thead>
           <tbody>
@@ -56,6 +58,14 @@ export function StoreRankingTable({ entries }: StoreRankingTableProps) {
                 </td>
                 <td className="px-6 py-4 text-sm text-ink-900">
                   {formatConversion(entry.conversionRate)}
+                </td>
+                <td className="px-6 py-4 text-sm">
+                  <Link
+                    className="font-medium text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+                    href={`/stores/${entry.storeId}`}
+                  >
+                    Details →
+                  </Link>
                 </td>
               </tr>
             ))}

@@ -101,6 +101,20 @@ describe("KpiChart", () => {
     });
   });
 
+  it("includes the store id when fetching store-scoped series", async () => {
+    const ordersData = [{ date: "2026-03-21", value: 64 }];
+    mockFetchJson(ordersData);
+
+    render(<KpiChart days={30} initialData={INITIAL_REVENUE_DATA} storeId="store_123" />);
+    fireEvent.click(screen.getByRole("button", { name: "Orders" }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/kpi/timeseries?days=30&metric=orders&storeId=store_123",
+      );
+    });
+  });
+
   it("syncs new revenue props without an extra fetch when revenue stays active", () => {
     const { rerender } = render(<KpiChart days={30} initialData={INITIAL_REVENUE_DATA} />);
 

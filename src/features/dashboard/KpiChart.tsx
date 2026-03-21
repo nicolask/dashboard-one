@@ -34,38 +34,51 @@ function formatDateLabel(dateStr: string) {
 type KpiChartProps = {
   initialData: TimeSeriesPoint[];
   days: number;
+  storeId?: string;
 };
 
-async function fetchMetricSeries(days: number, metric: TimeSeriesMetric) {
-  const response = await fetch(`/api/kpi/timeseries?days=${days}&metric=${metric}`);
+async function fetchMetricSeries(days: number, metric: TimeSeriesMetric, storeId?: string) {
+  const searchParams = new URLSearchParams({
+    days: String(days),
+    metric,
+  });
+
+  if (storeId) {
+    searchParams.set("storeId", storeId);
+  }
+
+  const response = await fetch(`/api/kpi/timeseries?${searchParams.toString()}`);
   return (await response.json()) as TimeSeriesPoint[];
 }
 
-export function KpiChart({ initialData, days }: KpiChartProps) {
+export function KpiChart({ initialData, days, storeId }: KpiChartProps) {
   const [metric, setMetric] = useState<TimeSeriesMetric>("revenue");
   const [data, setData] = useState(initialData);
   const [loading, setLoading] = useState(false);
   const latestRequestKeyRef = useRef<string | null>(null);
 
-  const loadMetricSeries = useCallback(async (nextMetric: TimeSeriesMetric, nextDays: number) => {
-    const requestKey = `${nextMetric}:${nextDays}:${Date.now()}`;
-    latestRequestKeyRef.current = requestKey;
-    setLoading(true);
+  const loadMetricSeries = useCallback(
+    async (nextMetric: TimeSeriesMetric, nextDays: number, nextStoreId?: string) => {
+      const requestKey = `${nextMetric}:${nextDays}:${nextStoreId ?? "all"}:${Date.now()}`;
+      latestRequestKeyRef.current = requestKey;
+      setLoading(true);
 
-    try {
-      const nextData = await fetchMetricSeries(nextDays, nextMetric);
+      try {
+        const nextData = await fetchMetricSeries(nextDays, nextMetric, nextStoreId);
 
-      if (latestRequestKeyRef.current !== requestKey) {
-        return;
+        if (latestRequestKeyRef.current !== requestKey) {
+          return;
+        }
+
+        setData(nextData);
+      } finally {
+        if (latestRequestKeyRef.current === requestKey) {
+          setLoading(false);
+        }
       }
-
-      setData(nextData);
-    } finally {
-      if (latestRequestKeyRef.current === requestKey) {
-        setLoading(false);
-      }
-    }
-  }, []);
+    },
+    [],
+  );
 
   const handleMetricChange = useCallback(
     async (next: TimeSeriesMetric) => {
@@ -89,8 +102,8 @@ export function KpiChart({ initialData, days }: KpiChartProps) {
       return;
     }
 
-    void loadMetricSeries(metric, days);
-  }, [days, initialData, loadMetricSeries, metric]);
+    void loadMetricSeries(metric, days, storeId);
+  }, [days, initialData, loadMetricSeries, metric, storeId]);
 
   const activeOption = METRIC_OPTIONS.find((o) => o.key === metric)!;
   // Show roughly 5–7 labels regardless of range
