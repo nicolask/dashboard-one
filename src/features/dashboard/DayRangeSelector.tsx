@@ -16,7 +16,7 @@ export function DayRangeSelector({ currentDays }: DayRangeSelectorProps) {
   function handleSelect(days: (typeof DAY_OPTIONS)[number]) {
     const params = new URLSearchParams(searchParams.toString());
     params.set("days", String(days));
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`, { scroll: false });
   }
 
   return (
