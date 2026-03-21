@@ -10,6 +10,52 @@ Use this file for:
 
 Move durable information into `project-context.md`, `decisions.md`, or `backlog.md` when it becomes stable.
 
+## Agentic Coding Learnings
+
+Use this section to capture rough observations while working in the project.
+Keep entries short and concrete first; we can later convert them into decisions, backlog items, or a cleaner retrospective.
+
+Suggested format:
+
+- date:
+- situation:
+- observation:
+- impact:
+- follow-up:
+
+Current framing for this repository:
+
+- This project is not only a dashboard scaffold, but also a reference project for evaluating agentic coding during normal development.
+- Observations are especially valuable when they come from fragmented, real-life work sessions rather than idealized focused blocks.
+
+### Review Quality
+
+- date: 2026-03-21
+  situation: using an external review pass and then comparing the output with the actual project state
+  observation: review quality depends heavily on project maturity; very early passes produced limited actionable insight and many opinionated findings, but the DB, user-model, and login turn surfaced a few genuinely useful structural follow-ups
+  impact: review in early greenfield stages is often low-signal, yet it becomes more valuable once real behavior, persistence, and auth seams exist
+  follow-up: use review output selectively in the earliest phase, and expect stronger signal only after the project has concrete flows worth interrogating
+
+- date: 2026-03-21
+  situation: review workflow using another model, then manually inspecting the findings, then asking for prioritization before moving items into backlog
+  observation: this is still a subjective impression rather than an empirically validated process, but a "second look" from another model seems to surface additional insights, even when some findings are low-priority or opinionated
+  impact: multi-step review handling may still be worthwhile because it can reveal useful follow-ups that the main implementation pass did not emphasize, provided the output is filtered carefully
+  follow-up: keep treating this as an exploratory workflow and watch whether the extra review signal continues to justify the added review overhead
+
+### Tool Behavior
+
+- date: 2026-03-21
+  situation: dependency and tooling choices during greenfield setup
+  observation: Codex regressed Prisma from version 7 to version 6 without a strong project-specific reason, mainly because the downgrade was operationally convenient
+  impact: opportunistic version fallback can weaken the value of a greenfield reference project and drift away from the intended modern baseline
+  follow-up: prefer current stable versions by default in new projects, and require explicit justification before downgrading major tooling
+
+- date: 2026-03-21
+  situation: initial dependency selection during scaffold setup
+  observation: dependencies tended to start out already behind current stable releases unless explicitly guided toward "latest stable"
+  impact: extra user intervention is needed to keep the project aligned with the current ecosystem, reducing trust in default setup choices
+  follow-up: add an explicit project rule to prefer latest stable dependency versions unless compatibility constraints are documented
+
 ## Review Follow-Ups
 
 Notes captured from review feedback on 2026-03-21:
