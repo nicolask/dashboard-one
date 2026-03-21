@@ -23,5 +23,5 @@ The goal is to keep durable project guidance close to the repository without mix
 - prefer short updates over long narratives
 - move durable facts into the right file instead of piling everything into notes
 - delete or rewrite stale notes when they stop being useful
+- keep the root `README.md` lightly in sync when developer onboarding, local setup, or demo access changes materially
 - keep this folder human-readable and agent-readable
-
