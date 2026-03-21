@@ -63,3 +63,9 @@ Because the project is intentionally greenfield and also serves as an agentic-co
 Captured the current button, link, hover, focus, motion, and contrast choices in `.agentic/ui-guidelines.md`.
 
 This keeps the visual language reusable as more dashboard components are added, without turning the early project into a heavy design system too soon.
+
+### `cn()` now uses `clsx` plus `tailwind-merge`
+
+Replaced the local truthy-string join helper with a `clsx` plus `tailwind-merge` wrapper before more shared UI components depend on `className` overrides.
+
+This keeps component composition ergonomic while preventing conflicting Tailwind utilities from accumulating silently as the UI surface grows. The added dependency cost is small, and making the change early avoids a noisier migration later.

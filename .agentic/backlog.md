@@ -2,7 +2,6 @@
 
 ## Near Term
 
-- decide whether to upgrade `cn()` to `clsx` + `tailwind-merge` before more shared UI components land
 - move font loading from CSS imports to `next/font`
 - decide when to add Playwright for end-to-end auth coverage
 - add a first Prisma migration for any follow-on auth tables instead of changing the initial migration in place
