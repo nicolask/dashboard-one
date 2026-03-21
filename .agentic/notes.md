@@ -70,6 +70,12 @@ Current framing for this repository:
   impact: extra user intervention is needed to keep the project aligned with the current ecosystem, reducing trust in default setup choices
   follow-up: add an explicit project rule to prefer latest stable dependency versions unless compatibility constraints are documented
 
+- date: 2026-03-21
+  situation: adding a client component (KpiChart) that needed types from a server-side KPI module
+  observation: the agent imported from the barrel (`@/lib/kpi`), which re-exports `timeseries.ts`, which imports Prisma, which pulls in `better-sqlite3`, which requires `fs` — crashing the client bundle with "Module not found: Can't resolve 'fs'". The barrel looked like the correct import style because every other file in the project used it.
+  impact: barrel exports that mix server-only and shared modules are structurally unsafe in Next.js App Router; an agent following local conventions will reliably make this mistake because it cannot distinguish the server/client boundary from import patterns alone
+  follow-up: when a module contains server-only code (DB, fs, crypto), either mark it with `import 'server-only'` or keep its types in a separate leaf file that client code can safely import; never re-export server modules from a barrel that client components also use
+
 ## Review Follow-Ups
 
 Notes captured from review feedback on 2026-03-21:
