@@ -87,3 +87,5 @@ This keeps top-level dashboard reads simple and fast for the intended BI workflo
 Prepared the project for simple Railway deployment by relying on a persistent mounted volume for the SQLite database, automatic `prisma generate` during install, and `prisma migrate deploy` during service start.
 
 This preserves the current low-friction demo architecture without forcing an early move to PostgreSQL or a larger hosting setup. The tradeoff is that the first hosted demo remains single-instance and SQLite-bound until a future database migration is warranted.
+
+For Railway specifically, the deploy flow is cleaner when migration and demo seeding run in a pre-deploy step while the start command only launches the Next.js server.

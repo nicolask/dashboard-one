@@ -78,20 +78,15 @@ DEMO_LOGIN_PASSWORD=ChangeMe123!
 Railway kann die Standardbefehle aus `package.json` verwenden:
 
 - Build: `npm run build`
+- Pre-deploy: `npm run railway:predeploy`
 - Start: `npm run railway:start`
 
-`postinstall` fuehrt automatisch `prisma generate` aus, und `railway:start` wendet vor dem Start noch offene Migrationen mit `prisma migrate deploy` an.
+`postinstall` fuehrt automatisch `prisma generate` aus. `railway:predeploy` legt zunaechst die Datenbankstruktur per `prisma migrate deploy` an und seeded danach die Demo-Daten.
 
 ### 4. Demo-User einmalig anlegen
 
 Wichtig: `prisma migrate deploy` erwartet fuer den ersten produktionsartigen Start eine frische SQLite-Datei auf der Railway-Volume. Wenn auf der gemounteten Datei schon ein manuell aufgebautes Schema liegt, muss die Datenbank zuerst geleert oder sauber migriert/baselined werden.
 
-Nach dem ersten erfolgreichen Deploy im Railway Shell/Command Runner ausfuehren:
-
-```bash
-npm run railway:seed-demo
-```
-
-Das legt sowohl die Demo-Dashboarddaten als auch den Demo-Login an.
+Mit dem gesetzten Pre-deploy-Schritt ist kein zusaetzlicher manueller Shell-Schritt noetig.
 
 Danach ist die App mit den gesetzten Demo-Credentials erreichbar.
