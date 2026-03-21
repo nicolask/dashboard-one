@@ -2,11 +2,17 @@ import { DashboardFrame } from "@/components/layout/dashboard-frame";
 import { Card } from "@/components/ui/card";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
 import { KpiCard } from "@/features/dashboard/KpiCard";
+import { StoreRankingTable } from "@/features/dashboard/StoreRankingTable";
 import {
   getAvgBasketKpi,
   getConversionKpi,
   getOrdersKpi,
   getRevenueKpi,
+  getStoreRanking,
+  formatBasket,
+  formatConversion,
+  formatOrders,
+  formatRevenue,
 } from "@/lib/kpi";
 
 const cards = [
@@ -38,60 +44,16 @@ function parseDays(value?: string) {
   return days === 7 || days === 30 || days === 90 ? days : 30;
 }
 
-function formatRevenue(value: number) {
-  if (value >= 1_000_000) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 2,
-      notation: "compact",
-    }).format(value);
-  }
-
-  if (value >= 1_000) {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "EUR",
-      maximumFractionDigits: 0,
-      notation: "compact",
-    }).format(value);
-  }
-
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "EUR",
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatOrders(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    maximumFractionDigits: 0,
-  }).format(value);
-}
-
-function formatBasket(value: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "EUR",
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(value);
-}
-
-function formatConversion(value: number) {
-  return `${(value * 100).toFixed(2)} %`;
-}
-
 export default async function DashboardPage({ searchParams }: DashboardPageProps) {
   const params = await searchParams;
   const days = parseDays(params?.days);
 
-  const [revenue, orders, basket, conversion] = await Promise.all([
+  const [revenue, orders, basket, conversion, storeRanking] = await Promise.all([
     getRevenueKpi(days),
     getOrdersKpi(days),
     getAvgBasketKpi(days),
     getConversionKpi(days),
+    getStoreRanking(days),
   ]);
 
   return (
@@ -135,6 +97,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             value={formatConversion(conversion.value)}
           />
         </div>
+
+        <StoreRankingTable entries={storeRanking} />
       </section>
 
       <section className="grid gap-4 md:grid-cols-3">

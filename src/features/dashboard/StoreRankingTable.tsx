@@ -1,0 +1,67 @@
+import { Card } from "@/components/ui/card";
+import { formatBasket, formatConversion, formatOrders, formatRevenue } from "@/lib/kpi/format";
+import type { StoreRankingEntry } from "@/lib/kpi";
+
+type StoreRankingTableProps = {
+  entries: StoreRankingEntry[];
+};
+
+export function StoreRankingTable({ entries }: StoreRankingTableProps) {
+  return (
+    <Card className="overflow-hidden p-0">
+      <div className="border-b border-white/70 px-6 py-5">
+        <p className="text-sm font-medium uppercase tracking-[0.18em] text-ink-700">
+          Store Comparison
+        </p>
+        <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-900">
+          Revenue ranking by store
+        </h2>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="min-w-full border-collapse text-left">
+          <thead className="bg-white/60 text-xs uppercase tracking-[0.16em] text-ink-700">
+            <tr>
+              <th className="px-6 py-4 font-medium">#</th>
+              <th className="px-6 py-4 font-medium">Store</th>
+              <th className="px-6 py-4 font-medium">Revenue</th>
+              <th className="px-6 py-4 font-medium">Orders</th>
+              <th className="px-6 py-4 font-medium">Avg Basket</th>
+              <th className="px-6 py-4 font-medium">Conversion</th>
+            </tr>
+          </thead>
+          <tbody>
+            {entries.map((entry) => (
+              <tr
+                className="odd:bg-white/30 even:bg-brand-100/25"
+                key={entry.storeId}
+              >
+                <td className="px-6 py-4 text-sm font-semibold text-ink-900">
+                  {entry.revenueRank}
+                </td>
+                <td className="px-6 py-4">
+                  <div>
+                    <p className="font-medium text-ink-900">{entry.storeName}</p>
+                    <p className="mt-1 text-sm text-ink-700">{entry.storeCode}</p>
+                  </div>
+                </td>
+                <td className="px-6 py-4 text-sm text-ink-900">
+                  {formatRevenue(entry.revenue)}
+                </td>
+                <td className="px-6 py-4 text-sm text-ink-900">
+                  {formatOrders(entry.orders)}
+                </td>
+                <td className="px-6 py-4 text-sm text-ink-900">
+                  {formatBasket(entry.avgBasketValue)}
+                </td>
+                <td className="px-6 py-4 text-sm text-ink-900">
+                  {formatConversion(entry.conversionRate)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
