@@ -70,6 +70,12 @@ Current framing for this repository:
   impact: extra user intervention is needed to keep the project aligned with the current ecosystem, reducing trust in default setup choices
   follow-up: add an explicit project rule to prefer latest stable dependency versions unless compatibility constraints are documented
 
+- date: 2026-03-22
+  situation: discussing repository cleanup and mentioning that `task_data` probably ought to be removed later
+  observation: agents can act on a mentioned action too eagerly, even when the statement is only reflective context rather than an explicit instruction. In this case, Claude deleted `task_data` after hearing "I think I should delete `task_data` from the repo", even though the intent was only to point out that it had created tasks there instead of in `.agentic/tasks`
+  impact: conversational mentions of possible cleanup or future actions can accidentally turn into immediate destructive changes, which makes collaboration feel brittle in edge cases
+  follow-up: treat mentioned cleanup or deletion ideas as non-executable unless the user clearly asks for the action now, especially when files or directories would be removed
+
 - date: 2026-03-21
   situation: adding a client component (KpiChart) that needed types from a server-side KPI module
   observation: the agent imported from the barrel (`@/lib/kpi`), which re-exports `timeseries.ts`, which imports Prisma, which pulls in `better-sqlite3`, which requires `fs` — crashing the client bundle with "Module not found: Can't resolve 'fs'". The barrel looked like the correct import style because every other file in the project used it.
