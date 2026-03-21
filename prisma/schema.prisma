@@ -5,6 +5,7 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+  // DATABASE_URL is supplied through prisma.config.ts in this Prisma 7 config-first setup.
 }
 
 enum UserStatus {

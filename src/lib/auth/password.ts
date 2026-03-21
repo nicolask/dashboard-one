@@ -1,9 +1,17 @@
 import { randomBytes, scryptSync, timingSafeEqual } from "node:crypto";
 
 const SCRYPT_KEY_LENGTH = 64;
+const SCRYPT_COST_FACTOR = 16_384;
+const SCRYPT_BLOCK_SIZE = 8;
+const SCRYPT_PARALLELIZATION = 1;
 
 function deriveKey(password: string, salt: string) {
-  return scryptSync(password, salt, SCRYPT_KEY_LENGTH);
+  // Keep Node's long-standing default work factors explicit so future changes stay intentional.
+  return scryptSync(password, salt, SCRYPT_KEY_LENGTH, {
+    N: SCRYPT_COST_FACTOR,
+    r: SCRYPT_BLOCK_SIZE,
+    p: SCRYPT_PARALLELIZATION,
+  });
 }
 
 export function hashPassword(password: string) {

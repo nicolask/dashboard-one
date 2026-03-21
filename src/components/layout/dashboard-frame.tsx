@@ -58,7 +58,7 @@ export async function DashboardFrame({
                   <p className="font-medium text-ink-900">
                     {user?.displayName ?? user?.email ?? "Signed in"}
                   </p>
-                  <p>{user?.email}</p>
+                  {user?.displayName ? <p>{user.email}</p> : null}
                 </div>
                 <form action={logout}>
                   <button

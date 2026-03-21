@@ -1,5 +1,6 @@
 import "dotenv/config";
 
+import { UserStatus } from "@generated/prisma/client";
 import { hashPassword } from "../src/lib/auth/password";
 import { createPrismaClient } from "../src/lib/db/prisma";
 
@@ -24,13 +25,13 @@ await prisma.user.upsert({
   update: {
     displayName: "Demo User",
     passwordHash,
-    status: "ACTIVE",
+    status: UserStatus.ACTIVE,
   },
   create: {
     email,
     displayName: "Demo User",
     passwordHash,
-    status: "ACTIVE",
+    status: UserStatus.ACTIVE,
   },
 });
 

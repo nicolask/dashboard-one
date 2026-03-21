@@ -1,5 +1,6 @@
 "use server";
 
+import { UserStatus } from "@generated/prisma/client";
 import { redirect } from "next/navigation";
 
 import { verifyPassword } from "@/lib/auth/password";
@@ -24,7 +25,7 @@ export async function login(formData: FormData) {
     },
   });
 
-  if (!user || !user.passwordHash || user.status !== "ACTIVE") {
+  if (!user || !user.passwordHash || user.status !== UserStatus.ACTIVE) {
     redirect("/login?error=invalid");
   }
 

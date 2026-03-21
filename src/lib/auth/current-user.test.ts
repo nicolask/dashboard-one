@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const getSessionUserIdMock = vi.fn();
-const findFirstMock = vi.fn();
+const findUniqueMock = vi.fn();
 const redirectMock = vi.fn((path: string) => {
   throw new Error(`redirect:${path}`);
 });
@@ -34,7 +34,7 @@ vi.mock("@/lib/auth/session", () => ({
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
     user: {
-      findFirst: findFirstMock,
+      findUnique: findUniqueMock,
     },
   },
 }));
@@ -60,7 +60,7 @@ describe("current-user", () => {
     };
 
     getSessionUserIdMock.mockResolvedValue("user_123");
-    findFirstMock.mockResolvedValue(user);
+    findUniqueMock.mockResolvedValue(user);
 
     const { getCurrentUser } = await import("@/lib/auth/current-user");
 
@@ -70,7 +70,7 @@ describe("current-user", () => {
     expect(firstUser).toEqual(user);
     expect(secondUser).toEqual(user);
     expect(getSessionUserIdMock).toHaveBeenCalledTimes(1);
-    expect(findFirstMock).toHaveBeenCalledTimes(1);
+    expect(findUniqueMock).toHaveBeenCalledTimes(1);
   });
 
   it("does not hit Prisma when there is no session", async () => {
@@ -84,7 +84,7 @@ describe("current-user", () => {
     expect(firstUser).toBeNull();
     expect(secondUser).toBeNull();
     expect(getSessionUserIdMock).toHaveBeenCalledTimes(1);
-    expect(findFirstMock).not.toHaveBeenCalled();
+    expect(findUniqueMock).not.toHaveBeenCalled();
   });
 
   it("returns the cached user from requireCurrentUser when present", async () => {
@@ -98,13 +98,13 @@ describe("current-user", () => {
     };
 
     getSessionUserIdMock.mockResolvedValue("user_456");
-    findFirstMock.mockResolvedValue(user);
+    findUniqueMock.mockResolvedValue(user);
 
     const { requireCurrentUser } = await import("@/lib/auth/current-user");
 
     await expect(requireCurrentUser()).resolves.toEqual(user);
     expect(getSessionUserIdMock).toHaveBeenCalledTimes(1);
-    expect(findFirstMock).toHaveBeenCalledTimes(1);
+    expect(findUniqueMock).toHaveBeenCalledTimes(1);
     expect(redirectMock).not.toHaveBeenCalled();
   });
 
@@ -115,7 +115,7 @@ describe("current-user", () => {
 
     await expect(requireCurrentUser()).rejects.toThrow("redirect:/login");
     expect(getSessionUserIdMock).toHaveBeenCalledTimes(1);
-    expect(findFirstMock).not.toHaveBeenCalled();
+    expect(findUniqueMock).not.toHaveBeenCalled();
     expect(redirectMock).toHaveBeenCalledWith("/login");
   });
 });

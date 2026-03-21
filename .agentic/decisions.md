@@ -46,6 +46,12 @@ Implemented the first login flow with local password verification against the `U
 
 This gives the project a real end-to-end auth path without forcing a full Auth.js or OIDC integration before the rest of the app is ready. The deliberate tradeoff is that session persistence and provider-account modeling are still deferred to a later auth expansion.
 
+### Signed cookie sessions require repeated status checks on protected entrypoints
+
+The current signed JWT cookie can remain valid until expiry, even if the corresponding user is later disabled.
+
+The mitigation for now is to re-check the user's active status on every protected page, server action, or API route entrypoint that relies on the session. The tradeoff is some repeated lookup cost, but it keeps disabled accounts from silently retaining access while the project still uses simple cookie-backed sessions.
+
 ### Prefer latest stable dependencies in greenfield work
 
 For this repository, the default should be to choose current stable dependency versions and modern runtime baselines instead of older majors picked for short-term convenience.
