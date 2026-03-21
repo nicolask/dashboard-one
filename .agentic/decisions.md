@@ -81,3 +81,9 @@ This gives the dashboard a reproducible demo dataset for local development and r
 Implemented the KPI query layer so revenue, orders, average basket, conversion, rankings, and alerts read primarily from `DailyStoreMetric`, while category and top-product drilldowns still use order-level data.
 
 This keeps top-level dashboard reads simple and fast for the intended BI workflow, while preserving order detail where drilldowns actually need it. The tradeoff is that seed and aggregation consistency matter more, so KPI checks and query boundaries should stay explicit.
+
+### Railway-first demo deployment path keeps the current SQLite setup intact
+
+Prepared the project for simple Railway deployment by relying on a persistent mounted volume for the SQLite database, automatic `prisma generate` during install, and `prisma migrate deploy` during service start.
+
+This preserves the current low-friction demo architecture without forcing an early move to PostgreSQL or a larger hosting setup. The tradeoff is that the first hosted demo remains single-instance and SQLite-bound until a future database migration is warranted.

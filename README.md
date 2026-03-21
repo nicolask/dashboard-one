@@ -52,3 +52,46 @@ Fuer die lokale Entwicklung sind aktuell folgende Demo-Zugangsdaten vorgesehen:
 - Passwort: `ChangeMe123!`
 
 Die Werte kommen aus der lokalen `.env` bzw. `.env.example` und koennen bei Bedarf angepasst werden. Nach einer Aenderung der Demo-Credentials sollte `npm run auth:seed-demo` erneut ausgefuehrt werden.
+
+## Schnell deployen auf Railway
+
+Fuer den aktuellen Stand des Projekts ist Railway der einfachste Weg, weil die App serverseitig laeuft und SQLite auf einer persistenten Volume weiterverwenden kann.
+
+### 1. Service anlegen
+
+- Repository mit Railway verbinden
+- eine Volume mounten, zum Beispiel auf `/data`
+
+### 2. Environment Variables setzen
+
+```bash
+DATABASE_URL=file:/data/app.db
+AUTH_SECRET=<lange-zufaellige-secret-zeichenkette>
+DEMO_LOGIN_EMAIL=demo@example.com
+DEMO_LOGIN_PASSWORD=ChangeMe123!
+```
+
+`AUTH_SECRET` sollte mindestens 32 Zeichen lang sein.
+
+### 3. Build- und Start-Command
+
+Railway kann die Standardbefehle aus `package.json` verwenden:
+
+- Build: `npm run build`
+- Start: `npm run railway:start`
+
+`postinstall` fuehrt automatisch `prisma generate` aus, und `railway:start` wendet vor dem Start noch offene Migrationen mit `prisma migrate deploy` an.
+
+### 4. Demo-User einmalig anlegen
+
+Wichtig: `prisma migrate deploy` erwartet fuer den ersten produktionsartigen Start eine frische SQLite-Datei auf der Railway-Volume. Wenn auf der gemounteten Datei schon ein manuell aufgebautes Schema liegt, muss die Datenbank zuerst geleert oder sauber migriert/baselined werden.
+
+Nach dem ersten erfolgreichen Deploy im Railway Shell/Command Runner ausfuehren:
+
+```bash
+npm run railway:seed-demo
+```
+
+Das legt sowohl die Demo-Dashboarddaten als auch den Demo-Login an.
+
+Danach ist die App mit den gesetzten Demo-Credentials erreichbar.
