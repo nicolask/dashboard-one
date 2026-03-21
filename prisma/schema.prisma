@@ -24,3 +24,175 @@ model User {
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 }
+
+model Store {
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  city      String
+  region    String
+  format    StoreFormat
+  sizeBand  SizeBand
+  openedAt  DateTime
+  isActive  Boolean  @default(true)
+
+  orders       Order[]
+  dailyMetrics DailyStoreMetric[]
+  dailyTraffic DailyTraffic[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum StoreFormat {
+  flagship
+  mall
+  urban
+  suburban
+}
+
+enum SizeBand {
+  small
+  medium
+  large
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  name      String
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  sortOrder Int        @default(0)
+
+  products Product[]
+
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id              String     @id @default(cuid())
+  sku             String     @unique
+  name            String
+  categoryId      String
+  category        Category   @relation(fields: [categoryId], references: [id])
+  brand           String?
+  basePrice       Float
+  baseCost        Float
+  marginBand      MarginBand
+  popularityScore Float      @default(0.5)
+  isPromoEligible Boolean    @default(true)
+  isActive        Boolean    @default(true)
+
+  orderItems OrderItem[]
+
+  createdAt DateTime @default(now())
+}
+
+enum MarginBand {
+  low
+  medium
+  high
+}
+
+model Order {
+  id             String       @id @default(cuid())
+  orderNumber    String       @unique
+  storeId        String
+  store          Store        @relation(fields: [storeId], references: [id])
+  orderedAt      DateTime
+  customerType   CustomerType
+  channel        Channel
+  itemCount      Int
+  subtotalAmount Float
+  discountAmount Float        @default(0)
+  taxAmount      Float        @default(0)
+  totalAmount    Float
+  paymentMethod  String?
+  status         OrderStatus  @default(completed)
+
+  items OrderItem[]
+
+  createdAt DateTime @default(now())
+
+  @@index([storeId, orderedAt])
+  @@index([orderedAt])
+}
+
+enum CustomerType {
+  new
+  returning
+}
+
+enum Channel {
+  in_store
+  click_collect
+  online
+}
+
+enum OrderStatus {
+  completed
+  cancelled
+  returned_partial
+  returned_full
+}
+
+model OrderItem {
+  id             String  @id @default(cuid())
+  orderId        String
+  order          Order   @relation(fields: [orderId], references: [id])
+  productId      String
+  product        Product @relation(fields: [productId], references: [id])
+  quantity       Int
+  unitPrice      Float
+  unitCost       Float
+  discountAmount Float   @default(0)
+  lineRevenue    Float
+  lineMargin     Float
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+model DailyStoreMetric {
+  id               String   @id @default(cuid())
+  date             DateTime
+  storeId          String
+  store            Store    @relation(fields: [storeId], references: [id])
+  revenue          Float
+  orders           Int
+  itemsSold        Int
+  avgBasketValue   Float
+  avgItemsPerOrder Float
+  visitors         Int
+  conversionRate   Float
+  discountRate     Float
+  returnRate       Float    @default(0)
+  marginAmount     Float
+  marginRate       Float
+  scenarioSlug     String?
+
+  createdAt DateTime @default(now())
+
+  @@unique([date, storeId])
+  @@index([storeId, date])
+  @@index([date])
+}
+
+model DailyTraffic {
+  id             String   @id @default(cuid())
+  date           DateTime
+  storeId        String
+  store          Store    @relation(fields: [storeId], references: [id])
+  visitors       Int
+  sessions       Int
+  addToCartCount Int
+  checkoutCount  Int
+  purchaseCount  Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([date, storeId])
+  @@index([storeId, date])
+}
