@@ -2,9 +2,9 @@
 
 ## Near Term
 
+- add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
 - move font loading from CSS imports to `next/font`
-- decide when to add Playwright for end-to-end auth coverage
-- add a first Prisma migration for any follow-on auth tables instead of changing the initial migration in place
+- introduce Playwright once login, redirects, and protected-route behavior are stable enough for end-to-end auth coverage
 
 ## Soon After
 
