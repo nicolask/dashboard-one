@@ -45,6 +45,13 @@ Keep it short, practical, and easy to apply when new components are added.
 - prefer short transitions and slight vertical lift for interactive controls
 - avoid large jumps, springy movement, or heavy glow effects
 
+## Collapsible Panels
+
+- panels with potentially long lists (alerts, logs, activity) should default to collapsed and show a summary line when closed
+- the summary should communicate count and type at a glance — e.g. chip-per-category with count
+- the toggle should be subtle and placed in the panel header, not a standalone button below the content
+- avoid raw technical identifiers (slugs, enum values) in user-facing labels; map them to readable names with a visual hint (emoji or icon) where it aids quick scanning
+
 ## Things To Avoid
 
 - implicit text color inheritance on CTA links

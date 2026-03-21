@@ -32,8 +32,8 @@ Current framing for this repository:
 
 - date: 2026-03-21
   situation: using an external review pass and then comparing the output with the actual project state
-  observation: review quality depends heavily on project maturity; very early passes produced limited actionable insight and many opinionated findings, but the DB, user-model, and login turn surfaced a few genuinely useful structural follow-ups
-  impact: review in early greenfield stages is often low-signal, yet it becomes more valuable once real behavior, persistence, and auth seams exist
+  observation: review quality depends heavily on project maturity; very early passes produced limited actionable insight and many opinionated findings, but the DB, user-model, and login turn surfaced a few genuinely useful structural follow-ups. A concrete example from a later pass: Claude generated a timeseries route for a chart without putting auth in front of it, and Codex then caught that gap during review.
+  impact: review in early greenfield stages is often low-signal, yet it becomes more valuable once real behavior, persistence, and auth seams exist; cross-checking models can expose real security or boundary issues that the generating model left open
   follow-up: use review output selectively in the earliest phase, and expect stronger signal only after the project has concrete flows worth interrogating
 
 - date: 2026-03-21
@@ -41,6 +41,20 @@ Current framing for this repository:
   observation: this is still a subjective impression rather than an empirically validated process, but a "second look" from another model seems to surface additional insights, even when some findings are low-priority or opinionated
   impact: multi-step review handling may still be worthwhile because it can reveal useful follow-ups that the main implementation pass did not emphasize, provided the output is filtered carefully
   follow-up: keep treating this as an exploratory workflow and watch whether the extra review signal continues to justify the added review overhead
+
+- date: 2026-03-21
+  situation: reviewing a newly added client-side dashboard chart with a URL-driven day-range switch
+  observation: the chart looked complete on the happy path, but a state-sync bug remained between server-provided props and client-held metric/data state. The issue only became obvious when reasoning through navigation, rerender, and async response ordering rather than from the isolated feature implementation itself.
+  impact: agent-generated UI work can look finished while still missing transition-state behavior across prop changes and async fetches; this kind of bug is easy to miss without explicit review of state boundaries
+  follow-up: when adding client components that mix server props, local state, and client fetches, include at least one test for prop changes and one for stale async responses
+
+### Agentic Workflow Evaluation — LOC and Time Analysis
+
+- date: 2026-03-21
+  situation: reflecting on the completed retail BI dashboard after ~7 hours of part-time work
+  observation: roughly 2.000–2.300 of ~3.100 LOC are genuine feature code (schema, seed, KPI layer, UI); the rest is scaffold and configs. Human contribution was almost entirely orchestration — schema design and KPI logic came from ChatGPT, tidying from Claude Chat, implementation from Codex, review from Claude Code. Even the "design decisions" are standard BI patterns, not original invention.
+  impact: the human role in this workflow is product owner + tool router, not developer or architect; speedup vs. a senior developer is roughly 3–5x, but the comparison may be misleading since no deep domain expertise was required on the human side
+  follow-up: worth tracking where the workflow genuinely broke down or required real human judgement vs. where it just needed steering — that distinction matters for evaluating the workflow's actual limits
 
 ### Tool Behavior
 

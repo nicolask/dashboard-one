@@ -1,5 +1,9 @@
 # Backlog
 
+## In Progress
+
+- T8: Alert Panel UX — collapsible panel with summary chips, pretty scenario labels with emoji (task: `.agentic/tasks/T8-alert-panel-ux.md`)
+
 ## Near Term
 
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
@@ -9,6 +13,7 @@
 ## Soon After
 
 - document environment variables and local setup
+- document the migration path from Railway demo hosting on SQLite to PostgreSQL once multi-instance deployment matters
 - plan migration path from local auth to OIDC
 - add auth-specific Prisma models for sessions, external accounts, and verification flows when login behavior is real
 - promote the signed-cookie session revocation limitation from backlog into durable auth documentation once the next auth round is implemented

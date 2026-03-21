@@ -4,8 +4,10 @@ import { AlertPanel } from "@/features/dashboard/AlertPanel";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
 import { CategoryPerformanceList } from "@/features/dashboard/CategoryPerformanceList";
 import { KpiCard } from "@/features/dashboard/KpiCard";
+import { KpiChart } from "@/features/dashboard/KpiChart";
 import { StoreRankingTable } from "@/features/dashboard/StoreRankingTable";
 import { TopProductsTable } from "@/features/dashboard/TopProductsTable";
+import { getMetricsTimeSeries } from "@/lib/kpi/timeseries";
 import {
   getAvgBasketKpi,
   getActiveAlerts,
@@ -63,6 +65,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     storeRanking,
     categoryPerformance,
     topProducts,
+    revenueTimeSeries,
   ] =
     await Promise.all([
       getRevenueKpi(days),
@@ -73,6 +76,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       getStoreRanking(days),
       getCategoryPerformance(days),
       getTopProducts(days),
+      getMetricsTimeSeries(days, "revenue"),
     ]);
 
   return (
@@ -116,6 +120,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             value={formatConversion(conversion.value)}
           />
         </div>
+
+        <KpiChart days={days} initialData={revenueTimeSeries} />
 
         <AlertPanel alerts={alerts} />
 
