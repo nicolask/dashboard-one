@@ -15,6 +15,7 @@
 - document environment variables and local setup
 - document the migration path from Railway demo hosting on SQLite to PostgreSQL once multi-instance deployment matters
 - plan migration path from local auth to OIDC
+- add chart-level "Info" affordances that explain KPI and trend calculation rules in human-readable language
 - add auth-specific Prisma models for sessions, external accounts, and verification flows when login behavior is real
 - promote the signed-cookie session revocation limitation from backlog into durable auth documentation once the next auth round is implemented
 - document SQLite to PostgreSQL migration caveats for IDs, text handling, and indexes

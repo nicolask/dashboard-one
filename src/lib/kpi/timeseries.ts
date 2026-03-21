@@ -18,7 +18,6 @@ export async function getMetricsTimeSeries(
     by: ["date"],
     where,
     _sum: { revenue: true, orders: true, visitors: true },
-    _avg: { conversionRate: true },
     orderBy: { date: "asc" },
   });
 
@@ -32,8 +31,10 @@ export async function getMetricsTimeSeries(
         value = row._sum.orders ?? 0;
         break;
       case "conversion":
-        // conversionRate is stored as a decimal (0.0–1.0); return as percentage
-        value = (row._avg.conversionRate ?? 0) * 100;
+        value =
+          (row._sum.visitors ?? 0) !== 0
+            ? ((row._sum.orders ?? 0) / (row._sum.visitors ?? 0)) * 100
+            : 0;
         break;
       case "traffic":
         value = row._sum.visitors ?? 0;
