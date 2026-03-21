@@ -1,9 +1,10 @@
+import { cache } from "react";
 import { redirect } from "next/navigation";
 
 import { prisma } from "@/lib/db/prisma";
 import { getSessionUserId } from "@/lib/auth/session";
 
-export async function getCurrentUser() {
+async function loadCurrentUser() {
   const userId = await getSessionUserId();
 
   if (!userId) {
@@ -25,6 +26,9 @@ export async function getCurrentUser() {
     },
   });
 }
+
+// Request-scoped caching lets protected layouts and nested dashboard chrome share one auth lookup.
+export const getCurrentUser = cache(loadCurrentUser);
 
 export async function requireCurrentUser() {
   const user = await getCurrentUser();
