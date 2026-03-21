@@ -28,13 +28,13 @@ export default function HomePage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Link
-              className="rounded-full bg-ink-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-ink-700"
+              className="rounded-full bg-ink-900 px-5 py-3 text-sm font-medium text-white shadow-[0_10px_24px_rgb(15_23_42_/_0.12)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-brand-700 hover:text-white hover:shadow-[0_18px_36px_rgb(8_145_178_/_0.2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
               href="/login"
             >
               Open login
             </Link>
             <Link
-              className="rounded-full border border-ink-200 bg-white/70 px-5 py-3 text-sm font-medium text-ink-900 transition hover:border-brand-300 hover:bg-white"
+              className="rounded-full border border-ink-200 bg-white/75 px-5 py-3 text-sm font-medium text-ink-900 shadow-[0_10px_24px_rgb(15_23_42_/_0.06)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:border-brand-500 hover:bg-brand-100 hover:text-ink-900 hover:shadow-[0_16px_30px_rgb(34_197_94_/_0.12)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
               href="/dashboard"
             >
               View dashboard shell
@@ -62,4 +62,3 @@ export default function HomePage() {
     </Shell>
   );
 }
-

@@ -54,7 +54,7 @@ export function LoginForm({ action, errorMessage }: LoginFormProps) {
           ) : null}
 
           <button
-            className="w-full rounded-2xl bg-ink-900 px-4 py-3 text-sm font-medium text-white transition hover:bg-ink-700"
+            className="w-full rounded-2xl bg-ink-900 px-4 py-3 text-sm font-medium text-white shadow-[0_12px_28px_rgb(15_23_42_/_0.12)] transition-all duration-200 ease-out hover:-translate-y-0.5 hover:bg-brand-700 hover:text-white hover:shadow-[0_18px_36px_rgb(8_145_178_/_0.2)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
             type="submit"
           >
             Sign in
@@ -66,7 +66,10 @@ export function LoginForm({ action, errorMessage }: LoginFormProps) {
             Use the locally seeded demo account while the full auth and onboarding
             flow is still taking shape.
           </p>
-          <Link className="font-medium text-brand-700 hover:text-brand-500" href="/">
+          <Link
+            className="font-medium text-brand-700 transition-colors hover:text-brand-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+            href="/"
+          >
             Back to overview
           </Link>
         </div>

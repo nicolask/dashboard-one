@@ -45,7 +45,6 @@ body {
 }
 
 a {
-  color: inherit;
   text-decoration: none;
 }
 
@@ -55,4 +54,3 @@ textarea,
 select {
   font: inherit;
 }
-
