@@ -19,12 +19,12 @@ const cards = [
   },
 ];
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
   return (
     <DashboardFrame
       eyebrow="Dashboard"
-      title="Protected area placeholder"
-      description="This route group is where the authenticated shell, widgets, and future integration views can live."
+      title="Authenticated dashboard"
+      description="This first protected area now sits behind a real local credentials login, with room for stronger session and provider-backed auth later."
     >
       <section className="grid gap-4 md:grid-cols-3">
         {cards.map((card) => (
@@ -40,4 +40,3 @@ export default function DashboardPage() {
     </DashboardFrame>
   );
 }
-

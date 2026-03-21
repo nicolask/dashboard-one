@@ -2,22 +2,25 @@
 
 ## Near Term
 
-- choose and configure database tooling
-- implement a first login flow
-- define the initial user model
-- add a protected app layout and auth guard seam
-- add `src/app/(app)/layout.tsx` as the shared protected-area shell
+- add `.env.example` for the Prisma/auth setup, including local demo-login variables
+- cache `getCurrentUser()` per request to avoid duplicate auth DB lookups in protected pages
+- switch Prisma generated-client imports back to the configured `@generated/*` alias once the seed/runtime path is confirmed clean
+- replace auth status string literals with generated Prisma enums and tighten current-user lookup to `findUnique`
+- clean up the dashboard user widget so email is not rendered twice when `displayName` is missing
+- make scrypt parameters explicit and document the chosen password-hashing settings
 - decide whether to upgrade `cn()` to `clsx` + `tailwind-merge` before more shared UI components land
 - decide when to add Playwright for end-to-end auth coverage
+- add a first Prisma migration for any follow-on auth tables instead of changing the initial migration in place
 
 ## Soon After
 
-- protect authenticated routes
 - document environment variables and local setup
-- decide on session strategy
 - plan migration path from local auth to OIDC
-- document SQLite to PostgreSQL migration caveats once Prisma is introduced
-- decide whether login should use a Server Action or an API route when auth is implemented
+- add auth-specific Prisma models for sessions, external accounts, and verification flows when login behavior is real
+- document the signed-cookie session revocation gap and the required status-check pattern for future server actions and API routes
+- document Prisma 7 upgrade and regeneration workflow for future agents once more database code exists
+- document SQLite to PostgreSQL migration caveats for IDs, text handling, and indexes
+- replace the demo-user bootstrap with a real first-user onboarding or admin creation path
 
 ## Later
 
@@ -31,7 +34,7 @@
 
 ## Open Questions
 
-- whether to start with custom credentials auth or introduce an auth library immediately
-- whether Prisma is the right first ORM choice for the team
 - how soon background processing will be needed for integration syncs
 - whether a root landing page should remain or redirect once auth becomes real
+- whether email uniqueness should stay application-normalized or move to a database-backed case-insensitive strategy when PostgreSQL is introduced
+- when to move from signed cookie sessions to database-backed sessions or Auth.js

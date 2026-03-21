@@ -13,3 +13,8 @@ Likely early modules:
 
 Keep domain logic in `src/features` unless it is truly cross-cutting.
 
+Current implementation:
+
+- `db/prisma.ts` exports the shared Prisma client singleton for server-side database access
+- Prisma Client code is generated explicitly into `generated/prisma`
+- `auth/` contains local password and session helpers for the first credentials flow
