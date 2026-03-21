@@ -81,11 +81,11 @@ Railway kann die Standardbefehle aus `package.json` verwenden:
 - Pre-deploy: `npm run railway:predeploy`
 - Start: `npm run railway:start`
 
-`postinstall` fuehrt automatisch `prisma generate` aus. `railway:predeploy` legt zunaechst die Datenbankstruktur per `prisma migrate deploy` an und seeded danach die Demo-Daten.
+`postinstall` fuehrt automatisch `prisma generate` aus. `railway:predeploy` wendet die vorhandenen Prisma-Migrationen an und seeded danach die Demo-Daten.
 
 ### 4. Demo-User einmalig anlegen
 
-Wichtig: `prisma migrate deploy` erwartet fuer den ersten produktionsartigen Start eine frische SQLite-Datei auf der Railway-Volume. Wenn auf der gemounteten Datei schon ein manuell aufgebautes Schema liegt, muss die Datenbank zuerst geleert oder sauber migriert/baselined werden.
+Die Railway-Volume sollte fuer den ersten produktionsartigen Start eine frische SQLite-Datei verwenden, damit `prisma migrate deploy` das Schema sauber anlegen kann.
 
 Mit dem gesetzten Pre-deploy-Schritt ist kein zusaetzlicher manueller Shell-Schritt noetig.
 

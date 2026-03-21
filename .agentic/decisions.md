@@ -84,7 +84,7 @@ This keeps top-level dashboard reads simple and fast for the intended BI workflo
 
 ### Railway-first demo deployment path keeps the current SQLite setup intact
 
-Prepared the project for simple Railway deployment by relying on a persistent mounted volume for the SQLite database, automatic `prisma generate` during install, and `prisma migrate deploy` during service start.
+Prepared the project for simple Railway deployment by relying on a persistent mounted volume for the SQLite database, automatic `prisma generate` during install, and a pre-deploy migration plus demo seed step.
 
 This preserves the current low-friction demo architecture without forcing an early move to PostgreSQL or a larger hosting setup. The tradeoff is that the first hosted demo remains single-instance and SQLite-bound until a future database migration is warranted.
 
