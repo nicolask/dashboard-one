@@ -45,6 +45,8 @@ Agents should:
 - read `.agentic/project-context.md` before making significant architecture changes
 - update `.agentic/decisions.md` when a notable technical decision is made
 - update `.agentic/backlog.md` when new follow-up work becomes clear
+- keep task-level context together: task specs live in `.agentic/tasks/T{N}-<slug>.md`, review follow-ups in `.agentic/tasks/T{N}-review.md`
+- when committing completed task work, include the relevant code changes plus the associated task file, review file, and any touched `.agentic/` context updates
 - keep documentation concise and current rather than exhaustive
 - prefer additive, reversible decisions in early project phases
 
@@ -84,6 +86,7 @@ Use the files there as follows:
 
 - keep `AGENTS.md` short; durable detail and project-specific learnings belong in `.agentic/`
 - do not import client code from barrels that also re-export server-only modules; use leaf imports for shared types and utilities
+- assume review agents may make small direct code edits during review; always inspect the actual working tree before preparing a final commit
 
 ## Change Discipline
 

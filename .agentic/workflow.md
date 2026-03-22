@@ -14,6 +14,7 @@ The exact model assigned to each role can change. What matters is the role split
 - the planner/reviewer turns goals into concrete tasks or reviewable scopes
 - the implementer/coder executes that scope in code
 - the planner/reviewer reviews the result, captures follow-ups, and decides whether work is complete or should be returned for another implementation pass
+- review passes may include small direct code edits from the reviewer when that is faster than a handback; the final implementation state is the combined result of implementer and reviewer edits, so commit preparation must account for both
 
 ## Handoff Guidance
 
@@ -21,6 +22,8 @@ The exact model assigned to each role can change. What matters is the role split
 - put stable architectural context in `project-context.md` or `decisions.md`
 - put deferred or follow-up work in `backlog.md`
 - keep temporary observations, review notes, and workflow learnings in `notes.md`
+- store per-task review writeups in `.agentic/tasks/` using `T{N}-review.md` when the review belongs to task `T{N}`
+- when completing and committing a task, include the code changes together with the relevant task context files: the task file, the review file if present, and any updated `.agentic/` companions such as `backlog.md`, `notes.md`, or `decisions.md`
 
 ## Review Expectations
 
