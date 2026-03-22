@@ -14,4 +14,5 @@ Reference log of finished work. Not needed in active context — check here when
 - **T16** — seed scenarios extended with Hamburg traffic surge and München competitor pressure; scenario labels, timeline colours, and insight narratives now cover all four seeded scenarios
 - **T17** — test coverage hardening across KPI layer, auth, and key UI components
 - **T18a** — controlling schema + deterministic seed: `Employee`, `EmployeeWorkLog`, and `DailyStoreCost` added with a dedicated migration and seed-backed verification
+- **T18b** — controlling KPI layer: `getDailyStoreCostSummary` joins `DailyStoreCost` with `DailyStoreMetric` to expose cost totals, profit, cost ratio, and revenue per staff hour
 - **T20** — Agentic Audit page at `/agentic`: LOC breakdown, time estimates, speedup comparison, conditions/Einordnung; `snapshot-data.ts` as single update point; three agentic KPI tiles on main dashboard; LOC snapshot SOP at `.agentic/prompts/loc-snapshot.md`

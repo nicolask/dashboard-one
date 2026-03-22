@@ -2,7 +2,7 @@
 
 ## Near Term
 
-- implement **T18b** — controlling KPI layer (`getDailyStoreCostSummary`, profit = marginAmount − totalCost) — depends on T18a
+- implement **T21** — controlling dashboard integration (P&L card row on overview + store detail) — depends on T18b
 - implement **T19** — tier insight narratives into active vs. historical context (underlying scenario work complete with T16)
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
 - move font loading from CSS imports to `next/font`
