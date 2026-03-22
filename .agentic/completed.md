@@ -10,9 +10,5 @@ Reference log of finished work. Not needed in active context — check here when
 - **T12** — explainable insights replaced the earlier alert-panel surface
 - **T13** — period comparison: dynamic `vs. previous Nd` labels on all KPI tiles, conversion delta in pp, revenue growth indicator per store in `StoreRankingTable`
 - **T14** — extended store benchmarking: `StoreBenchmarkRow` shows three reference lines per KPI card (network avg, format avg, top 25%); `StoreBenchmark` type extended with `formatAverage`, `topQuartile`, and store-count fields
-- **T15** — scenario timeline: `ScenarioTimeline` component on store detail page, scenario bands with date ranges, click-through to store drilldown
-- **T16** — new scenarios added to seed and insights engine
 - **T17** — test coverage hardening across KPI layer, auth, and key UI components
-- **T18** — controlling extension: staff cost, hours, and margin data in seed and store detail
-- **T19** — insight narrative tiering: temporal split into active/historical groups, explicit date ranges on cards, past-tense wording for concluded scenarios
 - **T20** — Agentic Audit page at `/agentic`: LOC breakdown, time estimates, speedup comparison, conditions/Einordnung; `snapshot-data.ts` as single update point; three agentic KPI tiles on main dashboard; LOC snapshot SOP at `.agentic/prompts/loc-snapshot.md`

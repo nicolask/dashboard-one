@@ -200,7 +200,7 @@ Scenarios are defined as a static array in the seed. Each entry applies multipli
 to a store's daily metrics for a date range. The `scenarioSlug` is written to every
 `DailyStoreMetric` row where a scenario was active.
 
-Current scenarios (T15/T16 will add more):
+Current implemented scenarios (`T15` will surface them in the UI; `T16` will add more):
 
 ```
 promo_week       global (all stores)    30 days ago, 7 days

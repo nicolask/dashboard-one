@@ -2,6 +2,10 @@
 
 ## Near Term
 
+- implement **T15** — scenario timeline strip on overview and store detail, based on `DailyStoreMetric.scenarioSlug`
+- implement **T16** — extend the seed and insights engine with additional scenarios after T15 lands (`T16` depends on `T15`)
+- implement **T18** — controlling foundation (staff costs, rent, daily store cost layer) as the next data-model expansion
+- implement **T19** — tier insight narratives into active vs. historical context once the underlying scenario work is in place
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
 - move font loading from CSS imports to `next/font`
 - introduce Playwright once login, redirects, and protected-route behavior are stable enough for end-to-end auth coverage
@@ -10,7 +14,7 @@
 
 ## Soon After
 
-- scenario timeline interactivity: clicking a scenario band on `ScenarioTimeline` currently navigates to the store drilldown; a richer alternative would highlight the corresponding `InsightPanel` card in-page (requires a Client Component with shared state or URL hash coordination) — deferred from T15
+- scenario timeline interactivity after T15 lands: clicking a scenario band on `ScenarioTimeline` could highlight the corresponding `InsightPanel` card in-page instead of only linking to the store drilldown (requires a Client Component with shared state or URL hash coordination)
 
 
 - zero-growth display in StoreRankingTable: stores with no previous-period data show `"0.0 %"` which looks like flat growth rather than missing history — consider rendering `"—"` when `revenueGrowth === 0` and the store has no prior data (requires distinguishing zero-growth from no-data in `StoreRankingEntry`)
@@ -29,12 +33,12 @@
 
 ## Later
 
-- migrate from SQLite to PostgreSQL on Railway: change `provider` in schema, swap `PrismaBetterSqlite3` adapter for standard `PrismaClient`, remove `better-sqlite3`, re-run migrations against PG instance, re-seed — best done before T18 (new enums are cleaner on a fresh PG DB); Railway injects `DATABASE_URL` directly, Prisma handles the rest
+- migrate from SQLite to PostgreSQL on Railway: change `provider` in schema, swap `PrismaBetterSqlite3` adapter for standard `PrismaClient`, remove `better-sqlite3`, re-run migrations against PG instance, re-seed — ideally before T18 lands on PostgreSQL-backed environments so the new enums/models start cleanly there; Railway injects `DATABASE_URL` directly, Prisma handles the rest
 
 
 
 - mobile layout pass: dashboard is designed for desktop; investigate collapsing StoreBenchmarkRow reference lines (three per card → toggle or accordion), KPI grid stacking, and StoreRankingTable horizontal scroll on small screens — scope as a dedicated sprint once the core feature set stabilises
-- employee drilldown view: store-level breakdown of headcount, hours worked, and staff cost contribution per role — data will exist after T18; natural follow-on to the controlling layer; scope as a dedicated store detail section or separate page
+- employee drilldown view: store-level breakdown of headcount, hours worked, and staff cost contribution per role — data will exist after T18 is implemented; natural follow-on to the controlling layer; scope as a dedicated store detail section or separate page
 - LLM-generated benchmark narrative: `StoreBenchmark` already carries `storeFormat`, `networkStoreCount`, `formatStoreCount`, `topQuartileStoreCount`, and all snapshot values — use these as a structured prompt payload to generate sentences like "Berlin Flagship liegt 12% über dem Durchschnitt der 8 Flagship-Stores, aber Conversion ist unterdurchschnittlich"; consider whether this extends InsightPanel or becomes a separate narrative block on the store detail page
 - add external system integration patterns
 - define caching and sync models
