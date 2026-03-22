@@ -37,3 +37,9 @@ When a change passes review and is considered merged:
 - Update auto-memory if something is worth carrying into future conversations
 
 The project docs should reflect the current state of the codebase after every approved change.
+
+## Recurring PO task — LOC snapshot
+
+When Nicolas asks for a new LOC analysis or agentic audit ("run the LOC analysis", "neue Auswertung", etc.):
+
+Follow the template at `.agentic/prompts/loc-snapshot.md`. This is a direct PO action — no task spec, no Codex. Measure, compute, update `src/features/agentic/snapshot-data.ts` in place.
