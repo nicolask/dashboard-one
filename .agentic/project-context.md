@@ -26,13 +26,16 @@ It also serves as a lightweight reference project for evaluating agentic coding 
 - public login route at `/login` backed by a local credentials flow
 - protected route group under `src/app/(app)` guarded by a shared layout auth check
 - dashboard route at `/dashboard`
+- agentic audit route at `/agentic`
 - store detail route at `/stores/[storeId]`
 - placeholder protected routes at `/users`, `/integrations`, and `/settings`
 - retail BI schema added to Prisma for stores, catalog, orders, daily metrics, traffic, and scenario-tagged alerts
 - deterministic retail seed simulator added under `prisma/seed.ts`
 - dashboard overview now shows KPI tiles, store ranking, category mix, top products, and an insight panel
+- dashboard overview now also includes an agentic summary teaser linking to the full `/agentic` audit
 - alert rows have already been replaced by explainable insight cards built from deterministic rules
 - store detail pages now show store-scoped KPIs, benchmark comparisons, top products, and scoped insights
+- point-in-time agentic audit data now lives in `src/features/agentic/snapshot-data.ts`
 - shared UI and layout components under `src/components`
 - dashboard-specific UI components live under `src/features/dashboard`
 - store-specific UI components live under `src/features/stores`
@@ -55,6 +58,7 @@ It also serves as a lightweight reference project for evaluating agentic coding 
 - protected pages and protected KPI API reads re-check current user state before serving data
 - the seeded retail dataset is rich enough to exercise dashboard and store-detail flows consistently
 - placeholder admin routes exist so navigation structure is already visible, even where product behavior is not yet built
+- the protected app shell now includes an `/agentic` route for documenting code volume, effort estimates, and speedup assumptions
 - test coverage currently focuses on auth helpers, KPI logic, API auth behavior, and key UI components
 
 ## Architectural Principles

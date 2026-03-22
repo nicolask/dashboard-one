@@ -6,6 +6,7 @@
 - move font loading from CSS imports to `next/font`
 - introduce Playwright once login, redirects, and protected-route behavior are stable enough for end-to-end auth coverage
 - add a short agent-facing environment reference in `.agentic/` for required variables, seed commands, and local auth expectations
+- fix the current repo-wide `tsc --noEmit` blocker in `src/lib/db/retail-seed.test.ts` (`unknown` access errors), which currently prevents a clean global typecheck even though T20-specific checks pass
 
 ## Soon After
 
@@ -51,6 +52,8 @@
 - when to move from signed cookie sessions to database-backed sessions or Auth.js
 
 ## Completed Recently
+
+- T20: Agentic Audit page at `/agentic` — LOC breakdown, time estimates, speedup comparison, and conditions/Einordnung; `snapshot-data.ts` as the single update point; three agentic KPI tiles replace the dev-status cards on the main dashboard; LOC snapshot SOP added to `.agentic/prompts/loc-snapshot.md`
 
 - T8: alert list work was superseded by the implemented `InsightPanel`, so the original collapsible `AlertPanel` task is no longer the active path
 - T10: store detail page and supporting store query layer are implemented

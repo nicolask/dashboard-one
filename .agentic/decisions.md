@@ -82,6 +82,12 @@ Implemented the KPI query layer so revenue, orders, average basket, conversion, 
 
 This keeps top-level dashboard reads simple and fast for the intended BI workflow, while preserving order detail where drilldowns actually need it. The tradeoff is that seed and aggregation consistency matter more, so KPI checks and query boundaries should stay explicit.
 
+### Point-in-time snapshot data lives in a plain data module, not in the component
+
+Introduced `src/features/agentic/snapshot-data.ts` as a React-free data module that drives the Agentic Audit page. All values — LOC counts, time estimates, task breakdowns, conditions text, token estimate — live there. The component only maps over it.
+
+This creates a clean update contract: future LOC snapshots require editing exactly one file (no component knowledge needed), and the data is testable independently of the UI. The tradeoff is that the data is static rather than computed at runtime, which is intentional for a point-in-time audit.
+
 ### Railway-first demo deployment path keeps the current SQLite setup intact
 
 Prepared the project for simple Railway deployment by relying on a persistent mounted volume for the SQLite database, automatic `prisma generate` during install, and a pre-deploy migration plus demo seed step.
