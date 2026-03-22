@@ -29,9 +29,9 @@ It also serves as a lightweight reference project for evaluating agentic coding 
 - agentic audit route at `/agentic`
 - store detail route at `/stores/[storeId]`
 - placeholder protected routes at `/users`, `/integrations`, and `/settings`
-- retail BI schema added to Prisma for stores, catalog, orders, daily metrics, traffic, and scenario-tagged alerts
-- deterministic retail seed simulator added under `prisma/seed.ts`
-- dashboard overview now shows KPI tiles, store ranking, category mix, top products, and an insight panel
+- retail BI schema added to Prisma for stores, catalog, orders, daily metrics, traffic, scenario-tagged alerts, and a controlling layer (`Employee`, `EmployeeWorkLog`, `DailyStoreCost`)
+- deterministic retail seed simulator added under `prisma/seed.ts`; controlling seed adds employees, daily work logs, and pre-aggregated daily cost rows per store
+- dashboard overview now shows KPI tiles (revenue + P&L), store ranking, category mix, top products, and an insight panel
 - dashboard overview now also includes an agentic summary teaser linking to the full `/agentic` audit
 - alert rows have already been replaced by explainable insight cards built from deterministic rules
 - store detail pages now show store-scoped KPIs, benchmark comparisons, top products, and scoped insights

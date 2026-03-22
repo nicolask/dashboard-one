@@ -43,3 +43,16 @@ export function formatBasket(value: number) {
 export function formatConversion(value: number) {
   return `${(value * 100).toFixed(2)} %`;
 }
+
+export function formatCostRatio(value: number) {
+  return `${(value * 100).toFixed(1)} %`;
+}
+
+export function formatRevenuePerStaffHour(value: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(value);
+}

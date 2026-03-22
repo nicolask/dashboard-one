@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/db/prisma";
-import { buildDateRanges } from "@/lib/kpi/types";
+import { buildDateRanges, calcKpi, type DateRange, type KpiValue } from "@/lib/kpi/types";
 
 export type CostSummary = {
   totalCost: number;
@@ -10,6 +10,13 @@ export type CostSummary = {
   profit: number;
   costRatio: number;
   revenuePerStaffHour: number;
+};
+
+export type CostKpis = {
+  profit: KpiValue;
+  totalCost: KpiValue;
+  costRatio: KpiValue;
+  revenuePerStaffHour: KpiValue;
 };
 
 const EMPTY_COST_SUMMARY: CostSummary = {
@@ -33,18 +40,13 @@ function buildCostWhere(range: { from: Date; to: Date }, storeId?: string) {
   };
 }
 
-export async function getDailyStoreCostSummary(
-  days: number,
-  storeId?: string,
-): Promise<CostSummary> {
-  const { current } = buildDateRanges(days);
-
+async function fetchCostSummaryForRange(range: DateRange, storeId?: string): Promise<CostSummary> {
   const [costs, metrics] = await Promise.all([
     prisma.dailyStoreCost.findMany({
-      where: buildCostWhere(current, storeId),
+      where: buildCostWhere(range, storeId),
     }),
     prisma.dailyStoreMetric.findMany({
-      where: buildCostWhere(current, storeId),
+      where: buildCostWhere(range, storeId),
       select: {
         date: true,
         storeId: true,
@@ -98,5 +100,32 @@ export async function getDailyStoreCostSummary(
     profit: totalMarginAmount - totalCost,
     costRatio: totalRevenue !== 0 ? totalCost / totalRevenue : 0,
     revenuePerStaffHour: staffHours !== 0 ? totalRevenue / staffHours : 0,
+  };
+}
+
+export async function getDailyStoreCostSummary(
+  days: number,
+  storeId?: string,
+): Promise<CostSummary> {
+  const { current } = buildDateRanges(days);
+  return fetchCostSummaryForRange(current, storeId);
+}
+
+export async function getCostKpis(days: number, storeId?: string): Promise<CostKpis> {
+  const { current, previous } = buildDateRanges(days);
+
+  const [currentSummary, previousSummary] = await Promise.all([
+    fetchCostSummaryForRange(current, storeId),
+    fetchCostSummaryForRange(previous, storeId),
+  ]);
+
+  return {
+    profit: calcKpi(currentSummary.profit, previousSummary.profit),
+    totalCost: calcKpi(currentSummary.totalCost, previousSummary.totalCost),
+    costRatio: calcKpi(currentSummary.costRatio, previousSummary.costRatio),
+    revenuePerStaffHour: calcKpi(
+      currentSummary.revenuePerStaffHour,
+      previousSummary.revenuePerStaffHour,
+    ),
   };
 }

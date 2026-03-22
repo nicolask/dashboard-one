@@ -2,9 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   formatBasket,
+  formatCostRatio,
   formatConversion,
   formatOrders,
   formatRevenue,
+  formatRevenuePerStaffHour,
 } from "@/lib/kpi/format";
 
 describe("formatRevenue", () => {
@@ -48,5 +50,19 @@ describe("formatConversion", () => {
 
   it("formats zero conversion cleanly", () => {
     expect(formatConversion(0)).toBe("0.00 %");
+  });
+});
+
+describe("formatCostRatio", () => {
+  it("formats cost ratios as one-decimal percentages", () => {
+    expect(formatCostRatio(0.314)).toBe("31.4 %");
+  });
+});
+
+describe("formatRevenuePerStaffHour", () => {
+  it("formats revenue per staff hour as fixed currency", () => {
+    const formatted = formatRevenuePerStaffHour(42);
+    expect(formatted).toContain("42.00");
+    expect(formatted).toContain("€");
   });
 });

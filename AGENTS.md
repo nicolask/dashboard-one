@@ -24,7 +24,8 @@ At the moment:
 - a local credentials login flow is implemented with a signed session cookie
 - protected app routes exist for dashboard, store detail, users, integrations, and settings
 - Prisma 7 is configured with SQLite, migrations, generated client output, and deterministic demo seed data
-- the dashboard already renders seeded retail BI data, KPI cards, charts, rankings, insights, and store drilldowns
+- the dashboard renders seeded retail BI data, KPI cards (revenue + P&L), charts, rankings, insights, and store drilldowns
+- a controlling layer (`Employee`, `EmployeeWorkLog`, `DailyStoreCost`) backs profit, cost ratio, and staff productivity KPIs on both overview and store detail pages
 - lint, typecheck, and automated tests are part of the working baseline
 - `.agentic/` remains the primary source of evolving agent context and planning
 

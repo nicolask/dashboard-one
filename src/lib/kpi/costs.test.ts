@@ -167,4 +167,76 @@ describe("cost KPI helpers", () => {
       revenuePerStaffHour: 0,
     });
   });
+
+  it("builds KPI deltas for current versus previous periods", async () => {
+    dailyStoreCostFindManyMock
+      .mockResolvedValueOnce([
+        {
+          date: new Date("2026-03-20T00:00:00.000Z"),
+          storeId: "store-1",
+          totalCost: 600,
+          staffCost: 400,
+          rentCost: 150,
+          otherCost: 50,
+          staffHours: 20,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          date: new Date("2026-02-20T00:00:00.000Z"),
+          storeId: "store-1",
+          totalCost: 400,
+          staffCost: 250,
+          rentCost: 120,
+          otherCost: 30,
+          staffHours: 10,
+        },
+      ]);
+    dailyStoreMetricFindManyMock
+      .mockResolvedValueOnce([
+        {
+          date: new Date("2026-03-20T00:00:00.000Z"),
+          storeId: "store-1",
+          revenue: 2000,
+          marginAmount: 1000,
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          date: new Date("2026-02-20T00:00:00.000Z"),
+          storeId: "store-1",
+          revenue: 1000,
+          marginAmount: 500,
+        },
+      ]);
+
+    const { getCostKpis } = await import("@/lib/kpi/costs");
+
+    await expect(getCostKpis(30, "store-1")).resolves.toEqual({
+      profit: {
+        value: 400,
+        previousValue: 100,
+        delta: 300,
+        deltaPercent: 3,
+      },
+      totalCost: {
+        value: 600,
+        previousValue: 400,
+        delta: 200,
+        deltaPercent: 0.5,
+      },
+      costRatio: {
+        value: 0.3,
+        previousValue: 0.4,
+        delta: -0.10000000000000003,
+        deltaPercent: -0.25000000000000006,
+      },
+      revenuePerStaffHour: {
+        value: 100,
+        previousValue: 100,
+        delta: 0,
+        deltaPercent: 0,
+      },
+    });
+  });
 });

@@ -15,6 +15,7 @@ import {
   getAvgBasketKpi,
   getActiveInsights,
   getCategoryPerformance,
+  getCostKpis,
   getConversionKpi,
   getOrdersKpi,
   getTopProducts,
@@ -22,9 +23,11 @@ import {
   getScenarioTimeline,
   getStoreRanking,
   formatBasket,
+  formatCostRatio,
   formatConversion,
   formatOrders,
   formatRevenue,
+  formatRevenuePerStaffHour,
 } from "@/lib/kpi";
 
 const agenticCards = [
@@ -65,6 +68,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     orders,
     basket,
     conversion,
+    costKpis,
     insights,
     storeRanking,
     categoryPerformance,
@@ -77,6 +81,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       getOrdersKpi(days),
       getAvgBasketKpi(days),
       getConversionKpi(days),
+      getCostKpis(days),
       getActiveInsights(30),
       getStoreRanking(days),
       getCategoryPerformance(days),
@@ -132,6 +137,34 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             deltaMode="pp"
             label="Conversion"
             value={formatConversion(conversion.value)}
+          />
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          <KpiCard
+            delta={costKpis.profit.deltaPercent}
+            deltaLabel={`vs. previous ${days}d`}
+            label="EBIT-like Profit"
+            value={formatRevenue(costKpis.profit.value)}
+          />
+          <KpiCard
+            delta={-costKpis.totalCost.deltaPercent}
+            deltaLabel={`vs. previous ${days}d`}
+            label="Operating Cost"
+            value={formatRevenue(costKpis.totalCost.value)}
+          />
+          <KpiCard
+            delta={-costKpis.costRatio.delta}
+            deltaLabel={`vs. previous ${days}d`}
+            deltaMode="pp"
+            label="Cost Ratio"
+            value={formatCostRatio(costKpis.costRatio.value)}
+          />
+          <KpiCard
+            delta={costKpis.revenuePerStaffHour.deltaPercent}
+            deltaLabel={`vs. previous ${days}d`}
+            label="Rev / Staff Hour"
+            value={formatRevenuePerStaffHour(costKpis.revenuePerStaffHour.value)}
           />
         </div>
 

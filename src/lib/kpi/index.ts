@@ -8,5 +8,5 @@ export * from "./products";
 export * from "./alerts";
 export * from "./insights";
 export * from "./scenarios";
-export { getDailyStoreCostSummary } from "./costs";
-export type { CostSummary } from "./costs";
+export { getDailyStoreCostSummary, getCostKpis } from "./costs";
+export type { CostSummary, CostKpis } from "./costs";

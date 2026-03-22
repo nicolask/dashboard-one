@@ -112,6 +112,20 @@ For Railway specifically, the deploy flow is cleaner when migration runs in pre-
 
 ## 2026-03-22
 
+### Profit is defined as gross margin minus operating costs, not revenue minus operating costs
+
+`profit = sum(marginAmount) − sum(totalCost)` throughout the controlling layer.
+
+Using `revenue − totalCost` was rejected because it ignores COGS already captured in `marginAmount`, producing artificially high "profit" figures (55–65% for large stores). The EBIT-equivalent formula keeps the P&L internally consistent: all cost layers are subtracted from gross profit, not from top-line revenue.
+
+Consequence: the `getCostKpis` function joins `DailyStoreCost` with `DailyStoreMetric` and accumulates `marginAmount` alongside cost fields. Any future P&L metric that derives profit must follow this convention.
+
+### Cost KPI deltas are inverted before passing to KpiCard
+
+`KpiCard` colours positive deltas emerald and negative deltas rose, assuming higher = better. Cost metrics invert this: `totalCost` and `costRatio` are passed as `-deltaPercent` / `-delta` so rising costs render as rose and falling costs as emerald. Productivity and profit metrics (`profit`, `revenuePerStaffHour`) use the natural sign.
+
+This convention lives in the page layer, not in `KpiCard` itself. `KpiCard` remains sign-agnostic.
+
 ### Operating costs use a second pre-aggregated daily fact table
 
 Added `DailyStoreCost` plus deterministic employee/worklog seed data instead of deriving staff and operating costs ad hoc from transactional rows.

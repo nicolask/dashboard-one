@@ -15,4 +15,5 @@ Reference log of finished work. Not needed in active context — check here when
 - **T17** — test coverage hardening across KPI layer, auth, and key UI components
 - **T18a** — controlling schema + deterministic seed: `Employee`, `EmployeeWorkLog`, and `DailyStoreCost` added with a dedicated migration and seed-backed verification
 - **T18b** — controlling KPI layer: `getDailyStoreCostSummary` joins `DailyStoreCost` with `DailyStoreMetric` to expose cost totals, profit, cost ratio, and revenue per staff hour
+- **T21** — controlling dashboard integration: P&L card row (EBIT-like Profit, Operating Cost, Cost Ratio, Rev/Staff Hour) added to overview and store detail pages; `getCostKpis` provides period-over-period deltas; cost metrics use inverted delta sign so rising costs show as negative
 - **T20** — Agentic Audit page at `/agentic`: LOC breakdown, time estimates, speedup comparison, conditions/Einordnung; `snapshot-data.ts` as single update point; three agentic KPI tiles on main dashboard; LOC snapshot SOP at `.agentic/prompts/loc-snapshot.md`
