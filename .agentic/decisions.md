@@ -88,6 +88,12 @@ Introduced `src/features/agentic/snapshot-data.ts` as a React-free data module t
 
 This creates a clean update contract: future LOC snapshots require editing exactly one file (no component knowledge needed), and the data is testable independently of the UI. The tradeoff is that the data is static rather than computed at runtime, which is intentional for a point-in-time audit.
 
+### SVG-based timeline bar instead of CSS absolute positioning
+
+The `ScenarioTimeline` strip renders the coloured scenario bands as SVG `<rect>` elements inside a fixed `viewBox`, with a transparent overlay layer for interactive links.
+
+CSS `absolute` child divs were tried first but produced sub-pixel rounding artefacts in Safari — bands misaligned or disappeared at certain viewport widths. SVG with `preserveAspectRatio="none"` resolves this because the browser scales the coordinate space rather than rounding individual percentage widths. The tradeoff is a slightly more complex component (two rendering layers: SVG for visuals, div overlay for interaction), but the cross-browser consistency is worth it.
+
 ### Railway-first demo deployment path keeps the current SQLite setup intact
 
 Prepared the project for simple Railway deployment by relying on a persistent mounted volume for the SQLite database, automatic `prisma generate` during install, and a pre-deploy migration plus demo seed step.

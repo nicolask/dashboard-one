@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { DashboardFrame } from "@/components/layout/dashboard-frame";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
 import { InsightPanel } from "@/features/dashboard/InsightPanel";
+import { ScenarioTimeline } from "@/features/dashboard/ScenarioTimeline";
 import { KpiCard } from "@/features/dashboard/KpiCard";
 import { KpiChart } from "@/features/dashboard/KpiChart";
 import { TopProductsTable } from "@/features/dashboard/TopProductsTable";
@@ -18,6 +19,7 @@ import {
   getConversionKpi,
   getOrdersKpi,
   getRevenueKpi,
+  getScenarioTimeline,
   getStoreBenchmark,
   getStoreById,
   getTopProducts,
@@ -47,7 +49,17 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
     notFound();
   }
 
-  const [revenue, orders, basket, conversion, timeseries, products, insights, benchmark] =
+  const [
+    revenue,
+    orders,
+    basket,
+    conversion,
+    timeseries,
+    products,
+    insights,
+    benchmark,
+    scenarioTimeline,
+  ] =
     await Promise.all([
       getRevenueKpi(days, storeId),
       getOrdersKpi(days, storeId),
@@ -57,6 +69,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
       getTopProducts(days, storeId),
       getActiveInsights(30, storeId),
       getStoreBenchmark(storeId, days, store.format),
+      getScenarioTimeline(storeId),
     ]);
 
   return (
@@ -68,6 +81,8 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
     >
       <section className="space-y-5">
         <StoreDetailHeader store={store} />
+
+        <ScenarioTimeline data={scenarioTimeline} />
 
         <div className="flex flex-col gap-4 rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-[0_18px_44px_rgb(15_23_42_/_0.08)] backdrop-blur md:flex-row md:items-center md:justify-between">
           <div>

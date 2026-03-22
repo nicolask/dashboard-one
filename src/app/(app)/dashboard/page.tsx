@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import { snapshot } from "@/features/agentic/snapshot-data";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
 import { InsightPanel } from "@/features/dashboard/InsightPanel";
+import { ScenarioTimeline } from "@/features/dashboard/ScenarioTimeline";
 import { CategoryPerformanceList } from "@/features/dashboard/CategoryPerformanceList";
 import { KpiCard } from "@/features/dashboard/KpiCard";
 import { KpiChart } from "@/features/dashboard/KpiChart";
@@ -18,6 +19,7 @@ import {
   getOrdersKpi,
   getTopProducts,
   getRevenueKpi,
+  getScenarioTimeline,
   getStoreRanking,
   formatBasket,
   formatConversion,
@@ -68,6 +70,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     categoryPerformance,
     topProducts,
     revenueTimeSeries,
+    scenarioTimeline,
   ] =
     await Promise.all([
       getRevenueKpi(days),
@@ -79,6 +82,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       getCategoryPerformance(days),
       getTopProducts(days),
       getMetricsTimeSeries(days, "revenue"),
+      getScenarioTimeline(),
     ]);
 
   return (
@@ -89,6 +93,8 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       description="A first retail BI snapshot built on seeded store metrics, with server-side KPI queries and a URL-driven day range for comparing recent performance."
     >
       <section className="space-y-5">
+        <ScenarioTimeline data={scenarioTimeline} />
+
         <div className="flex flex-col gap-4 rounded-[2rem] border border-white/70 bg-white/55 p-5 shadow-[0_18px_44px_rgb(15_23_42_/_0.08)] backdrop-blur md:flex-row md:items-center md:justify-between">
           <div>
             <p className="text-sm font-medium uppercase tracking-[0.18em] text-ink-700">

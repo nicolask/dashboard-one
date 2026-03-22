@@ -2,8 +2,7 @@
 
 ## Near Term
 
-- implement **T15** — scenario timeline strip on overview and store detail, based on `DailyStoreMetric.scenarioSlug`
-- implement **T16** — extend the seed and insights engine with additional scenarios after T15 lands (`T16` depends on `T15`)
+- implement **T16** — extend the seed and insights engine with additional scenarios
 - implement **T18** — controlling foundation (staff costs, rent, daily store cost layer) as the next data-model expansion
 - implement **T19** — tier insight narratives into active vs. historical context once the underlying scenario work is in place
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
@@ -14,7 +13,7 @@
 
 ## Soon After
 
-- scenario timeline interactivity after T15 lands: clicking a scenario band on `ScenarioTimeline` could highlight the corresponding `InsightPanel` card in-page instead of only linking to the store drilldown (requires a Client Component with shared state or URL hash coordination)
+- scenario timeline interactivity: clicking a scenario band on `ScenarioTimeline` could highlight the corresponding `InsightPanel` card in-page instead of only linking to the store drilldown (requires a Client Component with shared state or URL hash coordination)
 
 
 - zero-growth display in StoreRankingTable: stores with no previous-period data show `"0.0 %"` which looks like flat growth rather than missing history — consider rendering `"—"` when `revenueGrowth === 0` and the store has no prior data (requires distinguishing zero-growth from no-data in `StoreRankingEntry`)
