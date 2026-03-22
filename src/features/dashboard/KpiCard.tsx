@@ -5,10 +5,16 @@ type KpiCardProps = {
   value: string;
   delta: number;
   deltaLabel?: string;
+  deltaMode?: "percent" | "pp";
 };
 
-function formatDelta(delta: number) {
-  const sign = delta > 0 ? "+" : delta < 0 ? "-" : "";
+function formatDelta(delta: number, mode: "percent" | "pp" = "percent") {
+  const sign = delta > 0 ? "+" : delta < 0 ? "−" : "";
+
+  if (mode === "pp") {
+    return `${sign}${Math.abs(delta * 100).toFixed(2)} pp`;
+  }
+
   return `${sign}${Math.abs(delta * 100).toFixed(1)} %`;
 }
 
@@ -17,6 +23,7 @@ export function KpiCard({
   value,
   delta,
   deltaLabel = "vs. previous period",
+  deltaMode = "percent",
 }: KpiCardProps) {
   const deltaClassName =
     delta > 0
@@ -31,13 +38,13 @@ export function KpiCard({
         <p className="text-sm font-medium uppercase tracking-[0.16em] text-ink-700">{label}</p>
         <p className="text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{value}</p>
       </div>
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
         <span
-          className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${deltaClassName}`}
+          className={`inline-flex shrink-0 whitespace-nowrap rounded-full px-3 py-1 text-sm font-semibold ${deltaClassName}`}
         >
-          {formatDelta(delta)}
+          {formatDelta(delta, deltaMode)}
         </span>
-        <span className="text-sm text-ink-700">{deltaLabel}</span>
+        <span className="min-w-0 text-sm text-ink-700">{deltaLabel}</span>
       </div>
     </Card>
   );

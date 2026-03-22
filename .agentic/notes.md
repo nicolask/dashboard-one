@@ -82,6 +82,12 @@ Current framing for this repository:
   impact: barrel exports that mix server-only and shared modules are structurally unsafe in Next.js App Router; an agent following local conventions will reliably make this mistake because it cannot distinguish the server/client boundary from import patterns alone
   follow-up: when a module contains server-only code (DB, fs, crypto), either mark it with `import 'server-only'` or keep its types in a separate leaf file that client code can safely import; never re-export server modules from a barrel that client components also use
 
+- date: 2026-03-22
+  situation: running `next build` for T13 inside the Codex sandbox
+  observation: Next.js 16 with Turbopack can fail inside this sandbox with an internal error while processing CSS because the build tries to create a process that binds to a port; the visible failure is `Failed to write app endpoint /page` with `Operation not permitted (os error 1)`
+  impact: a sandbox-only Turbopack failure can look like an application regression even when the code is fine, which wastes time unless the environment constraint is recognized quickly
+  follow-up: if `next build` fails with this specific Turbopack sandbox error, rerun the build with escalated permissions before treating it as a code issue
+
 ## Review Follow-Ups
 
 Notes captured from review feedback on 2026-03-21:

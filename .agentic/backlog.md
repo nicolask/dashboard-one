@@ -12,6 +12,7 @@
 - scenario timeline interactivity: clicking a scenario band on `ScenarioTimeline` currently navigates to the store drilldown; a richer alternative would highlight the corresponding `InsightPanel` card in-page (requires a Client Component with shared state or URL hash coordination) — deferred from T15
 
 
+- zero-growth display in StoreRankingTable: stores with no previous-period data show `"0.0 %"` which looks like flat growth rather than missing history — consider rendering `"—"` when `revenueGrowth === 0` and the store has no prior data (requires distinguishing zero-growth from no-data in `StoreRankingEntry`)
 - period comparison for category mix and top products: evaluate whether to show period-over-period delta for CategoryPerformanceList and TopProductsTable; requires extending the in-memory OrderItem aggregation path and deciding on placement (overview vs. store drilldown only); likely its own task
 - category-level insights: extend the insights engine to generate scenario-aware sentences for category performance (e.g. "Beauty showing above-average growth since Promo Week start") — requires OrderItem aggregation by category, separate from DailyStoreMetric path
 - document environment variables and local setup
@@ -55,3 +56,4 @@
 - T10: store detail page and supporting store query layer are implemented
 - T11: placeholder routes for users, integrations, and settings are implemented
 - T12: explainable insights replaced the earlier alert-panel surface
+- T13: period comparison — dynamic `vs. previous Nd` labels on all KPI tiles, conversion delta in pp, revenue growth indicator per store in StoreRankingTable

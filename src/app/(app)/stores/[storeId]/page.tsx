@@ -84,17 +84,26 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <KpiCard
             delta={revenue.deltaPercent}
+            deltaLabel={`vs. previous ${days}d`}
             label="Revenue"
             value={formatRevenue(revenue.value)}
           />
-          <KpiCard delta={orders.deltaPercent} label="Orders" value={formatOrders(orders.value)} />
+          <KpiCard
+            delta={orders.deltaPercent}
+            deltaLabel={`vs. previous ${days}d`}
+            label="Orders"
+            value={formatOrders(orders.value)}
+          />
           <KpiCard
             delta={basket.deltaPercent}
+            deltaLabel={`vs. previous ${days}d`}
             label="Avg Basket"
             value={formatBasket(basket.value)}
           />
           <KpiCard
-            delta={conversion.deltaPercent}
+            delta={conversion.delta}
+            deltaLabel={`vs. previous ${days}d`}
+            deltaMode="pp"
             label="Conversion"
             value={formatConversion(conversion.value)}
           />

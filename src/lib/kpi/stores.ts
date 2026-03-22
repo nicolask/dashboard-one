@@ -34,6 +34,7 @@ export type StoreRankingEntry = {
   avgBasketValue: number;
   conversionRate: number;
   revenueRank: number;
+  revenueGrowth: number;
 };
 
 function buildMetricWhere(range: { from: Date; to: Date }, storeId?: string) {
@@ -175,27 +176,41 @@ export async function getStoreBenchmark(storeId: string, days: number): Promise<
 }
 
 export async function getStoreRanking(days: number): Promise<StoreRankingEntry[]> {
-  const { current } = buildDateRanges(days);
+  const { current, previous } = buildDateRanges(days);
 
-  const groupedMetrics = await prisma.dailyStoreMetric.groupBy({
-    by: ["storeId"],
-    where: {
-      date: {
-        gte: current.from,
-        lte: current.to,
+  const [groupedMetrics, previousMetrics] = await Promise.all([
+    prisma.dailyStoreMetric.groupBy({
+      by: ["storeId"],
+      where: {
+        date: {
+          gte: current.from,
+          lte: current.to,
+        },
       },
-    },
-    _sum: {
-      revenue: true,
-      orders: true,
-      visitors: true,
-    },
-    orderBy: {
       _sum: {
-        revenue: "desc",
+        revenue: true,
+        orders: true,
+        visitors: true,
       },
-    },
-  });
+      orderBy: {
+        _sum: {
+          revenue: "desc",
+        },
+      },
+    }),
+    prisma.dailyStoreMetric.groupBy({
+      by: ["storeId"],
+      where: {
+        date: {
+          gte: previous.from,
+          lte: previous.to,
+        },
+      },
+      _sum: {
+        revenue: true,
+      },
+    }),
+  ]);
 
   const stores = await prisma.store.findMany({
     where: {
@@ -211,11 +226,15 @@ export async function getStoreRanking(days: number): Promise<StoreRankingEntry[]
   });
 
   const storesById = new Map(stores.map((store) => [store.id, store]));
+  const previousByStoreId = new Map(
+    previousMetrics.map((entry) => [entry.storeId, entry._sum.revenue ?? 0]),
+  );
 
   return groupedMetrics.map((entry, index) => {
     const revenue = entry._sum.revenue ?? 0;
     const orders = entry._sum.orders ?? 0;
     const visitors = entry._sum.visitors ?? 0;
+    const previousRevenue = previousByStoreId.get(entry.storeId) ?? 0;
     const store = storesById.get(entry.storeId);
 
     return {
@@ -227,6 +246,7 @@ export async function getStoreRanking(days: number): Promise<StoreRankingEntry[]
       avgBasketValue: orders !== 0 ? revenue / orders : 0,
       conversionRate: visitors !== 0 ? orders / visitors : 0,
       revenueRank: index + 1,
+      revenueGrowth: previousRevenue !== 0 ? (revenue - previousRevenue) / previousRevenue : 0,
     };
   });
 }

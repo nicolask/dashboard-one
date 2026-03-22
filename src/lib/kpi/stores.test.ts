@@ -78,16 +78,23 @@ describe("store KPI helpers", () => {
   });
 
   it("ranks stores by revenue and falls back to unknown labels when metadata is missing", async () => {
-    groupByMock.mockResolvedValue([
-      {
-        storeId: "store-1",
-        _sum: { revenue: 300, orders: 30, visitors: 200 },
-      },
-      {
-        storeId: "store-2",
-        _sum: { revenue: 100, orders: 5, visitors: 50 },
-      },
-    ]);
+    groupByMock
+      .mockResolvedValueOnce([
+        {
+          storeId: "store-1",
+          _sum: { revenue: 300, orders: 30, visitors: 200 },
+        },
+        {
+          storeId: "store-2",
+          _sum: { revenue: 100, orders: 5, visitors: 50 },
+        },
+      ])
+      .mockResolvedValueOnce([
+        {
+          storeId: "store-1",
+          _sum: { revenue: 200 },
+        },
+      ]);
     findManyMock.mockResolvedValue([
       {
         id: "store-1",
@@ -109,6 +116,7 @@ describe("store KPI helpers", () => {
         avgBasketValue: 10,
         conversionRate: 0.15,
         revenueRank: 1,
+        revenueGrowth: 0.5,
       },
       {
         storeId: "store-2",
@@ -119,6 +127,7 @@ describe("store KPI helpers", () => {
         avgBasketValue: 20,
         conversionRate: 0.1,
         revenueRank: 2,
+        revenueGrowth: 0,
       },
     ]);
   });
