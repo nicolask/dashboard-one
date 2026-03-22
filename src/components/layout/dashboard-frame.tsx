@@ -16,6 +16,7 @@ const navLinks = [
   { href: "/users", label: "Users" },
   { href: "/integrations", label: "Integrations" },
   { href: "/settings", label: "Settings" },
+  { href: "/agentic", label: "Agentic" },
 ];
 
 export async function DashboardFrame({

@@ -1,5 +1,7 @@
+import Link from "next/link";
 import { DashboardFrame } from "@/components/layout/dashboard-frame";
 import { Card } from "@/components/ui/card";
+import { snapshot } from "@/features/agentic/snapshot-data";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
 import { InsightPanel } from "@/features/dashboard/InsightPanel";
 import { CategoryPerformanceList } from "@/features/dashboard/CategoryPerformanceList";
@@ -23,21 +25,21 @@ import {
   formatRevenue,
 } from "@/lib/kpi";
 
-const cards = [
+const agenticCards = [
   {
-    title: "Auth status",
-    value: "Local credentials",
-    detail: "Planned seam for OIDC and provider-backed identity later.",
+    title: "Built in",
+    value: `~${snapshot.actualHours}h`,
+    detail: "A full retail BI dashboard — seeded data, auth, KPI layer, tests. Start to finish.",
   },
   {
-    title: "Data sources",
-    value: "0 connected",
-    detail: "External systems can be added behind sync jobs and cache tables.",
+    title: "Speedup",
+    value: `${snapshot.speedupLow}–${snapshot.speedupHigh}×`,
+    detail: `vs. an estimated ${snapshot.seniorDevHoursLow}–${snapshot.seniorDevHoursHigh}h for a senior developer building the same thing solo.`,
   },
   {
-    title: "Storage path",
-    value: "SQLite first",
-    detail: "Model for easy Prisma migration to PostgreSQL when needed.",
+    title: "Codebase",
+    value: `~${(snapshot.locNonTest / 1000).toFixed(1)}k LOC`,
+    detail: `${snapshot.completedTaskCount} tasks · ${snapshot.commitCount} commits · human-orchestrated, agent-implemented.`,
   },
 ];
 
@@ -139,16 +141,26 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        {cards.map((card) => (
-          <Card className="space-y-3" key={card.title}>
-            <p className="text-sm font-medium text-ink-700">{card.title}</p>
-            <h2 className="text-2xl font-semibold tracking-tight text-ink-900">
-              {card.value}
-            </h2>
-            <p className="text-sm leading-6 text-ink-700">{card.detail}</p>
-          </Card>
-        ))}
+      <section className="space-y-3">
+        <div className="grid gap-4 md:grid-cols-3">
+          {agenticCards.map((card) => (
+            <Card className="space-y-3" key={card.title}>
+              <p className="text-sm font-medium text-ink-700">{card.title}</p>
+              <p className="text-2xl font-semibold tracking-tight text-ink-900">
+                {card.value}
+              </p>
+              <p className="text-sm leading-6 text-ink-700">{card.detail}</p>
+            </Card>
+          ))}
+        </div>
+        <div className="flex justify-end">
+          <Link
+            className="text-sm font-medium text-ink-700 underline-offset-4 hover:text-ink-900 hover:underline"
+            href="/agentic"
+          >
+            Full analysis →
+          </Link>
+        </div>
       </section>
     </DashboardFrame>
   );
