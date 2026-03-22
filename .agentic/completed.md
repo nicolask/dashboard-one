@@ -13,4 +13,5 @@ Reference log of finished work. Not needed in active context — check here when
 - **T15** — scenario timeline strip added above the time-range selector on overview and store detail; full seeded-history window is independent of the `days` filter and links store-scoped scenarios to the relevant drilldown
 - **T16** — seed scenarios extended with Hamburg traffic surge and München competitor pressure; scenario labels, timeline colours, and insight narratives now cover all four seeded scenarios
 - **T17** — test coverage hardening across KPI layer, auth, and key UI components
+- **T18a** — controlling schema + deterministic seed: `Employee`, `EmployeeWorkLog`, and `DailyStoreCost` added with a dedicated migration and seed-backed verification
 - **T20** — Agentic Audit page at `/agentic`: LOC breakdown, time estimates, speedup comparison, conditions/Einordnung; `snapshot-data.ts` as single update point; three agentic KPI tiles on main dashboard; LOC snapshot SOP at `.agentic/prompts/loc-snapshot.md`

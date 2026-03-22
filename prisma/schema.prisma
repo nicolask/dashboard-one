@@ -39,6 +39,8 @@ model Store {
   orders       Order[]
   dailyMetrics DailyStoreMetric[]
   dailyTraffic DailyTraffic[]
+  employees    Employee[]
+  dailyStoreCosts DailyStoreCost[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -55,6 +57,19 @@ enum SizeBand {
   small
   medium
   large
+}
+
+enum EmployeeRole {
+  sales
+  manager
+  cashier
+  stock
+}
+
+enum ContractType {
+  full_time
+  part_time
+  minijob
 }
 
 model Category {
@@ -195,4 +210,46 @@ model DailyTraffic {
 
   @@unique([date, storeId])
   @@index([storeId, date])
+}
+
+model Employee {
+  id           String            @id @default(cuid())
+  storeId      String
+  store        Store             @relation(fields: [storeId], references: [id])
+  role         EmployeeRole
+  contractType ContractType
+  weeklyHours  Float
+  hourlyWage   Float
+  isActive     Boolean           @default(true)
+  workLogs     EmployeeWorkLog[]
+}
+
+model EmployeeWorkLog {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  date        DateTime
+  hoursWorked Float
+
+  @@unique([employeeId, date])
+  @@index([employeeId, date])
+  @@index([date])
+}
+
+model DailyStoreCost {
+  id            String   @id @default(cuid())
+  date          DateTime
+  storeId       String
+  store         Store    @relation(fields: [storeId], references: [id])
+  staffCost     Float
+  rentCost      Float
+  otherCost     Float
+  totalCost     Float
+  staffHours    Float
+  employeeCount Int
+  scenarioSlug  String?
+
+  @@unique([date, storeId])
+  @@index([storeId, date])
+  @@index([date])
 }

@@ -2,7 +2,6 @@
 
 ## Near Term
 
-- implement **T18a** — controlling schema + seed (Employee, EmployeeWorkLog, DailyStoreCost models + deterministic seed)
 - implement **T18b** — controlling KPI layer (`getDailyStoreCostSummary`, profit = marginAmount − totalCost) — depends on T18a
 - implement **T19** — tier insight narratives into active vs. historical context (underlying scenario work complete with T16)
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place

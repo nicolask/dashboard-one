@@ -26,6 +26,37 @@ const prisma = new PrismaClient({ adapter });
 const SEED_VALUE = "retail-demo-v1";
 const DAYS_HISTORY = 120;
 const ORDER_SAMPLE_RATE = 0.15;
+const ROLE_SHARES = {
+  manager: 0.1,
+  sales: 0.65,
+  cashier: 0.13,
+  stock: 0.12,
+} as const;
+const HEADCOUNT: Record<string, number> = {
+  "flagship+large": 11,
+  "mall+large": 8,
+  "urban+medium": 7,
+  "suburban+medium": 3,
+  "mall+small": 3,
+  "urban+small": 3,
+  "suburban+small": 2,
+};
+const ROLE_WAGES = {
+  manager: 28.0,
+  sales: 23.0,
+  cashier: 21.0,
+  stock: 18.0,
+} as const;
+const CONTRACT_HOURS = {
+  full_time: 40,
+  part_time: 20,
+  minijob: 10,
+} as const;
+const RENT_BASE = {
+  large: 350,
+  medium: 150,
+  small: 80,
+} as const;
 
 const PRODUCT_NAMES: Record<string, string[]> = {
   electronics: [
@@ -353,6 +384,15 @@ const SCENARIOS: Scenario[] = [
   },
 ] as const;
 
+type EmployeeSeedRecord = {
+  hourlyWage: number;
+  weeklyHours: number;
+  storeCode: string;
+};
+type EmployeeSeedMap = Map<string, EmployeeSeedRecord>;
+type SeededRole = keyof typeof ROLE_SHARES;
+type SeededContractType = keyof typeof CONTRACT_HOURS;
+
 function makeRng(namespace: string) {
   const r = new Rand(`${SEED_VALUE}::${namespace}`);
 
@@ -396,6 +436,88 @@ function activeScenario(storeCode: string, date: Date): Scenario | null {
   }
 
   return null;
+}
+
+function getHistoryDates() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const dates: Date[] = [];
+  for (let offset = DAYS_HISTORY; offset >= 0; offset--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - offset);
+    dates.push(date);
+  }
+
+  return dates;
+}
+
+function roundCurrency(value: number) {
+  return Math.round(value * 100) / 100;
+}
+
+function clampMin(value: number, min: number) {
+  return Math.max(min, value);
+}
+
+function getScenarioWorklogMultiplier(storeCode: string, date: Date) {
+  const scenario = activeScenario(storeCode, date);
+
+  if (!scenario) {
+    return 1;
+  }
+
+  if (scenario.slug === "promo_week") {
+    return 1.15;
+  }
+
+  if (scenario.slug === "store_slump") {
+    return 0.85;
+  }
+
+  return 1;
+}
+
+function getStoreDefinition(storeCode: string) {
+  const store = STORE_CATALOG.find((entry) => entry.code === storeCode);
+
+  if (!store) {
+    throw new Error(`Missing store definition for ${storeCode}`);
+  }
+
+  return store;
+}
+
+function assignContractType(role: SeededRole, index: number, count: number): SeededContractType {
+  if (role === "manager") {
+    return "full_time";
+  }
+
+  if (role === "sales") {
+    return index < Math.ceil(count * 0.6) ? "full_time" : "part_time";
+  }
+
+  return index % 2 === 0 ? "part_time" : "minijob";
+}
+
+function buildRoleCounts(headcount: number): Record<SeededRole, number> {
+  const counts: Record<SeededRole, number> = {
+    manager: Math.round(headcount * ROLE_SHARES.manager),
+    sales: Math.round(headcount * ROLE_SHARES.sales),
+    cashier: Math.round(headcount * ROLE_SHARES.cashier),
+    stock: Math.round(headcount * ROLE_SHARES.stock),
+  };
+
+  counts.manager = clampMin(counts.manager, 1);
+
+  const total = counts.manager + counts.sales + counts.cashier + counts.stock;
+  counts.sales += headcount - total;
+
+  if (counts.sales < 0) {
+    throw new Error(`Invalid role allocation for headcount ${headcount}`);
+  }
+
+  return counts;
 }
 
 async function seedCatalog() {
@@ -495,9 +617,7 @@ async function seedStores() {
 
 async function generateDailyMetrics(storeMap: Map<string, string>) {
   console.log(`-> Generating ${DAYS_HISTORY} days x ${STORE_CATALOG.length} stores of daily metrics...`);
-
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const historyDates = getHistoryDates();
 
   let batchCount = 0;
 
@@ -508,10 +628,7 @@ async function generateDailyMetrics(storeMap: Map<string, string>) {
       throw new Error(`Missing store id for ${storeDef.code}`);
     }
 
-    for (let offset = DAYS_HISTORY; offset >= 0; offset--) {
-      const date = new Date(today);
-      date.setDate(today.getDate() - offset);
-
+    for (const date of historyDates) {
       const rng = makeRng(`daily::${storeDef.code}::${date.toISOString().slice(0, 10)}`);
       const scenario = activeScenario(storeDef.code, date);
       const effects = scenario?.effects ?? {};
@@ -581,6 +698,183 @@ async function generateDailyMetrics(storeMap: Map<string, string>) {
   }
 
   console.log(`   ✓ ${batchCount} daily metric records`);
+}
+
+async function seedEmployees(storeMap: Map<string, string>): Promise<EmployeeSeedMap> {
+  console.log("-> Seeding store employees...");
+
+  const employeeMap: EmployeeSeedMap = new Map();
+  let employeeCount = 0;
+
+  for (const storeDef of STORE_CATALOG) {
+    const storeId = storeMap.get(storeDef.code);
+
+    if (!storeId) {
+      throw new Error(`Missing store id for ${storeDef.code}`);
+    }
+
+    await prisma.employeeWorkLog.deleteMany({
+      where: { employee: { storeId } },
+    });
+
+    await prisma.employee.deleteMany({
+      where: { storeId },
+    });
+
+    const headcount = HEADCOUNT[`${storeDef.format}+${storeDef.sizeBand}`];
+
+    if (!headcount) {
+      throw new Error(`Missing headcount config for ${storeDef.code}`);
+    }
+
+    const roleCounts = buildRoleCounts(headcount);
+
+    for (const role of Object.keys(roleCounts) as SeededRole[]) {
+      const count = roleCounts[role];
+
+      for (let index = 0; index < count; index++) {
+        const contractType = assignContractType(role, index, count);
+        const weeklyHours = CONTRACT_HOURS[contractType];
+        const hourlyWage = ROLE_WAGES[role];
+
+        const employee = await prisma.employee.create({
+          data: {
+            storeId,
+            role,
+            contractType,
+            weeklyHours,
+            hourlyWage,
+            isActive: true,
+          },
+        });
+
+        employeeMap.set(employee.id, {
+          hourlyWage,
+          weeklyHours,
+          storeCode: storeDef.code,
+        });
+
+        employeeCount += 1;
+      }
+    }
+  }
+
+  console.log(`   ✓ ${employeeCount} employees`);
+
+  return employeeMap;
+}
+
+async function seedWorkLogs(employeeMap: EmployeeSeedMap) {
+  console.log("-> Seeding employee work logs...");
+
+  const historyDates = getHistoryDates();
+  let workLogCount = 0;
+
+  for (const [employeeId, employee] of employeeMap) {
+    for (const date of historyDates) {
+      const isoDate = date.toISOString().slice(0, 10);
+      const baseHours = employee.weeklyHours / 5;
+      const scenarioMult = getScenarioWorklogMultiplier(employee.storeCode, date);
+      const noise = makeRng(`worklog::${employeeId}::${isoDate}`).between(0.95, 1.05);
+      const hoursWorked = roundCurrency(
+        clampMin(baseHours * weekdayFactor(date) * scenarioMult * noise, 0),
+      );
+
+      await prisma.employeeWorkLog.upsert({
+        where: { employeeId_date: { employeeId, date } },
+        update: { hoursWorked },
+        create: {
+          employeeId,
+          date,
+          hoursWorked,
+        },
+      });
+
+      workLogCount += 1;
+    }
+  }
+
+  console.log(`   ✓ ${workLogCount} work logs`);
+}
+
+async function seedDailyStoreCosts(storeMap: Map<string, string>) {
+  console.log("-> Seeding daily store costs...");
+
+  const historyDates = getHistoryDates();
+  let costCount = 0;
+
+  for (const [storeCode, storeId] of storeMap) {
+    const storeDef = getStoreDefinition(storeCode);
+    const logs = await prisma.employeeWorkLog.findMany({
+      where: { employee: { storeId } },
+      include: { employee: { select: { hourlyWage: true } } },
+      orderBy: { date: "asc" },
+    });
+
+    const logsByDate = new Map<
+      string,
+      Array<{ employeeId: string; hoursWorked: number; hourlyWage: number }>
+    >();
+
+    for (const log of logs) {
+      const isoDate = log.date.toISOString().slice(0, 10);
+      const existing = logsByDate.get(isoDate) ?? [];
+      existing.push({
+        employeeId: log.employeeId,
+        hoursWorked: log.hoursWorked,
+        hourlyWage: log.employee.hourlyWage,
+      });
+      logsByDate.set(isoDate, existing);
+    }
+
+    for (const date of historyDates) {
+      const isoDate = date.toISOString().slice(0, 10);
+      const dateLogs = logsByDate.get(isoDate) ?? [];
+      const staffHours = roundCurrency(
+        dateLogs.reduce((sum, log) => sum + log.hoursWorked, 0),
+      );
+      const staffCost = roundCurrency(
+        dateLogs.reduce((sum, log) => sum + log.hoursWorked * log.hourlyWage, 0),
+      );
+      const rentCost = RENT_BASE[storeDef.sizeBand];
+      const otherCostNoise = clampMin(
+        makeRng(`othercost::${storeCode}::${isoDate}`).normal(1, 0.2),
+        0.01,
+      );
+      const otherCost = roundCurrency(rentCost * 0.08 * otherCostNoise);
+      const totalCost = roundCurrency(staffCost + rentCost + otherCost);
+      const employeeCount = new Set(dateLogs.map((log) => log.employeeId)).size;
+      const scenarioSlug = activeScenario(storeCode, date)?.slug ?? null;
+
+      await prisma.dailyStoreCost.upsert({
+        where: { date_storeId: { date, storeId } },
+        update: {
+          staffCost,
+          rentCost,
+          otherCost,
+          totalCost,
+          staffHours,
+          employeeCount,
+          scenarioSlug,
+        },
+        create: {
+          date,
+          storeId,
+          staffCost,
+          rentCost,
+          otherCost,
+          totalCost,
+          staffHours,
+          employeeCount,
+          scenarioSlug,
+        },
+      });
+
+      costCount += 1;
+    }
+  }
+
+  console.log(`   ✓ ${costCount} daily cost records`);
 }
 
 function pickWeightedCategory(
@@ -805,9 +1099,16 @@ async function main() {
   await generateDailyMetrics(storeMap);
   await runKpiChecks();
   await generateSampleOrders(storeMap);
+  const employeeMap = await seedEmployees(storeMap);
+  await seedWorkLogs(employeeMap);
+  await seedDailyStoreCosts(storeMap);
 
   console.log("\nSeed complete.\n");
   console.log("   Snapshot generated at:", new Date().toISOString());
+  console.log("   Controlling layer:");
+  console.log("   - employees seeded");
+  console.log("   - work logs seeded");
+  console.log("   - daily store costs seeded");
   console.log("   Built-in scenarios:");
   for (const scenario of SCENARIOS) {
     console.log(`   - [${scenario.slug}] ${scenario.description}`);

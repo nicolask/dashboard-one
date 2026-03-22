@@ -109,3 +109,11 @@ Prepared the project for simple Railway deployment by relying on a persistent mo
 This preserves the current low-friction demo architecture without forcing an early move to PostgreSQL or a larger hosting setup. The tradeoff is that the first hosted demo remains single-instance and SQLite-bound until a future database migration is warranted.
 
 For Railway specifically, the deploy flow is cleaner when migration runs in pre-deploy, but the start command should still be able to self-heal by applying migrations and seeding missing demo data before launching Next.js.
+
+## 2026-03-22
+
+### Operating costs use a second pre-aggregated daily fact table
+
+Added `DailyStoreCost` plus deterministic employee/worklog seed data instead of deriving staff and operating costs ad hoc from transactional rows.
+
+This mirrors the existing `DailyStoreMetric` approach: revenue and gross margin remain pre-aggregated for simple dashboard reads, and operating costs now follow the same pattern so profit and productivity KPIs can be joined in the KPI layer without complex runtime aggregation. The tradeoff is extra seed/model surface area, but the query path stays clearer and more portable across SQLite and PostgreSQL.
