@@ -2,7 +2,8 @@
 
 ## Near Term
 
-- implement **T18** — controlling foundation (staff costs, rent, daily store cost layer) as the next data-model expansion
+- implement **T18a** — controlling schema + seed (Employee, EmployeeWorkLog, DailyStoreCost models + deterministic seed)
+- implement **T18b** — controlling KPI layer (`getDailyStoreCostSummary`, profit = marginAmount − totalCost) — depends on T18a
 - implement **T19** — tier insight narratives into active vs. historical context (underlying scenario work complete with T16)
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
 - move font loading from CSS imports to `next/font`
@@ -31,12 +32,12 @@
 
 ## Later
 
-- migrate from SQLite to PostgreSQL on Railway: change `provider` in schema, swap `PrismaBetterSqlite3` adapter for standard `PrismaClient`, remove `better-sqlite3`, re-run migrations against PG instance, re-seed — ideally before T18 lands on PostgreSQL-backed environments so the new enums/models start cleanly there; Railway injects `DATABASE_URL` directly, Prisma handles the rest
+- migrate from SQLite to PostgreSQL on Railway: change `provider` in schema, swap `PrismaBetterSqlite3` adapter for standard `PrismaClient`, remove `better-sqlite3`, re-run migrations against PG instance, re-seed — ideally before T18a lands on PostgreSQL-backed environments so the new enums/models start cleanly there; Railway injects `DATABASE_URL` directly, Prisma handles the rest
 
 
 
 - mobile layout pass: dashboard is designed for desktop; investigate collapsing StoreBenchmarkRow reference lines (three per card → toggle or accordion), KPI grid stacking, and StoreRankingTable horizontal scroll on small screens — scope as a dedicated sprint once the core feature set stabilises
-- employee drilldown view: store-level breakdown of headcount, hours worked, and staff cost contribution per role — data will exist after T18 is implemented; natural follow-on to the controlling layer; scope as a dedicated store detail section or separate page
+- employee drilldown view: store-level breakdown of headcount, hours worked, and staff cost contribution per role — data will exist after T18a is implemented; natural follow-on to the controlling layer; scope as a dedicated store detail section or separate page
 - LLM-generated benchmark narrative: `StoreBenchmark` already carries `storeFormat`, `networkStoreCount`, `formatStoreCount`, `topQuartileStoreCount`, and all snapshot values — use these as a structured prompt payload to generate sentences like "Berlin Flagship liegt 12% über dem Durchschnitt der 8 Flagship-Stores, aber Conversion ist unterdurchschnittlich"; consider whether this extends InsightPanel or becomes a separate narrative block on the store detail page
 - add external system integration patterns
 - define caching and sync models

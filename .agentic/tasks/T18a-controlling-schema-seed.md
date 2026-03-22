@@ -1,20 +1,21 @@
-# T18 – Controlling Extension: Staff Costs, Rent, and Daily P&L Foundation
+# T18a – Controlling Layer: Schema, Migration, Seed
 
 ## Context
 
 The dashboard is currently revenue-only. Gross margin exists in `DailyStoreMetric`
 but there are no operating costs — no staff, no rent, no profit figure.
 
-This task adds the **Controlling Layer**: three new models (`Employee`,
-`EmployeeWorkLog`, `DailyStoreCost`) and the seed logic to populate them.
-The result is a pre-aggregated daily cost row per store that can be joined with
-`DailyStoreMetric` at query time to compute profit, cost ratio, and staff
-productivity KPIs.
+This task adds the **data foundation** for the Controlling Layer: three new Prisma
+models (`Employee`, `EmployeeWorkLog`, `DailyStoreCost`), the migration, and the
+seed logic to populate them deterministically.
+
+The result is a pre-aggregated daily cost row per store (`DailyStoreCost`) that
+can be joined with `DailyStoreMetric` at query time to compute profit, cost ratio,
+and staff productivity KPIs. That join logic is out of scope here — it is the
+subject of T18b.
 
 The pattern deliberately mirrors the existing architecture: `DailyStoreMetric`
 is the query layer for revenue; `DailyStoreCost` is the query layer for costs.
-Dashboard integration (new KPI cards, chart series, P&L section) is out of scope
-for this task — that comes after the data layer is in place and verified.
 
 ---
 
@@ -112,20 +113,22 @@ Append three new seed steps after the existing five. Do not modify steps 1–5.
 
 ```ts
 const HEADCOUNT: Record<string, number> = {
-  "flagship+large":   24,
-  "mall+large":       18,
-  "urban+medium":     13,
-  "suburban+medium":  10,
-  "mall+small":        8,
-  "urban+small":       7,
-  "suburban+small":    6,
+  "flagship+large":   11,
+  "mall+large":        8,
+  "urban+medium":      7,
+  "suburban+medium":   3,
+  "mall+small":        3,
+  "urban+small":       3,
+  "suburban+small":    2,
 };
 
+// Arbeitgeberkosten (Bruttolohn + ~46 % Lohnnebenkosten).
+// Stock entspricht Mindestlohn (12.82 €) × 1.40 ≈ 18 €.
 const ROLE_WAGES: Record<string, number> = {
-  manager: 20.00,
-  sales:   14.00,
-  cashier: 13.00,
-  stock:   12.50,
+  manager: 28.00,
+  sales:   23.00,
+  cashier: 21.00,
+  stock:   18.00,
 };
 
 const CONTRACT_HOURS: Record<string, number> = {
@@ -134,10 +137,11 @@ const CONTRACT_HOURS: Record<string, number> = {
   minijob:   10,
 };
 
+// Tägliche Mietpauschale pro Store-Größe.
 const RENT_BASE: Record<string, number> = {
-  large:  680,
-  medium: 420,
-  small:  280,
+  large:  350,
+  medium: 150,
+  small:   80,
 };
 ```
 
@@ -165,12 +169,12 @@ group (sales) to make the total equal `headcount` exactly.
 **Contract type** — assign deterministically by index within each role group
 (not random):
 
-| role    | distribution                        |
-|---------|-------------------------------------|
-| manager | full_time (100%)                    |
-| sales   | first 60% → full_time, rest → part_time |
-| cashier | alternating: part_time / minijob    |
-| stock   | alternating: part_time / minijob    |
+| role    | distribution                             |
+|---------|------------------------------------------|
+| manager | full_time (100%)                         |
+| sales   | first 60% → full_time, rest → part_time  |
+| cashier | alternating: part_time / minijob         |
+| stock   | alternating: part_time / minijob         |
 
 **weeklyHours** — from `CONTRACT_HOURS` by contract type.
 **hourlyWage** — from `ROLE_WAGES` by role. No randomness.
@@ -178,7 +182,7 @@ group (sales) to make the total equal `headcount` exactly.
 Use `prisma.employee.upsert` keyed on `storeId + role + index` — or delete-and-recreate
 if upsert key is hard to define cleanly. All employees `isActive: true`.
 
-Return a map: `employeeId → { hourlyWage, weeklyHours }`.
+Return a map: `employeeId → { hourlyWage, weeklyHours, storeCode }`.
 
 ---
 
@@ -196,14 +200,15 @@ hoursWorked  = max(0, baseHours × dayFactor × scenarioMult × noise)
 
 **Scenario multipliers for hoursWorked:**
 
-| scenarioSlug       | multiplier | scope      |
-|--------------------|-----------|------------|
-| `promo_week`       | 1.15      | all stores |
-| `store_slump`      | 0.85      | LEI-01     |
-| *(none)*           | 1.00      | —          |
+| scenarioSlug  | multiplier | scope      |
+|---------------|------------|------------|
+| `promo_week`  | 1.15       | all stores |
+| `store_slump` | 0.85       | LEI-01     |
+| *(none)*      | 1.00       | —          |
 
 Use the existing `activeScenario(storeCode, date)` function — do not hardcode
-dates or store codes. The employee's store code must be passed through.
+dates or store codes. The employee's store code must be passed through from the
+`employeeMap`.
 
 Use `prisma.employeeWorkLog.upsert` keyed on `@@unique([employeeId, date])`.
 
@@ -211,26 +216,25 @@ Use `prisma.employeeWorkLog.upsert` keyed on `@@unique([employeeId, date])`.
 
 ### Step 8 — `seedDailyStoreCosts(storeMap)`
 
-One row per store per day. For each store+date, aggregate the WorkLogs already
-written in step 7:
+One row per store per day. For each store, fetch all WorkLogs in a single
+`findMany` (no N+1 per day) and group by date in TypeScript before writing
+`DailyStoreCost` records:
 
 ```ts
 const logs = await prisma.employeeWorkLog.findMany({
-  where: { date, employee: { storeId } },
+  where: { employee: { storeId } },
   include: { employee: { select: { hourlyWage: true } } },
 });
 
+// group by date, then for each date:
 staffHours    = Σ log.hoursWorked
 staffCost     = Σ (log.hoursWorked × log.employee.hourlyWage)
 rentCost      = RENT_BASE[store.sizeBand]
 otherCost     = rentCost × 0.08 × noise   // makeRng(`othercost::${storeCode}::${isoDate}`), normal(1, 0.2), clamped > 0
 totalCost     = staffCost + rentCost + otherCost
-employeeCount = logs.length
+employeeCount = logs.length  // distinct employees active that day
 scenarioSlug  = activeScenario(storeCode, date)?.slug ?? null
 ```
-
-Fetch all WorkLogs for a store across all dates in a single `findMany` (no N+1
-per day) and group by date in TypeScript before writing `DailyStoreCost` records.
 
 Use `prisma.dailyStoreCost.upsert` keyed on `@@unique([date, storeId])`.
 
@@ -254,43 +258,23 @@ Add the three new step names to the `main()` log output at the end of the file.
 
 ---
 
-## 3. KPI queries (data layer only — no UI)
+## 3. Test fix (`src/lib/db/retail-seed.test.ts`)
 
-Add `src/lib/kpi/costs.ts` — new file.
-
-### Type
+Replace the hardcoded migration path list with a dynamic glob so the integration
+test automatically includes the new migration:
 
 ```ts
-export type CostKpi = {
-  value: number;
-  deltaPercent: number | null;
-};
+import { readdirSync } from "node:fs";
+
+const migrationsDir = path.join(workspaceDir, "prisma", "migrations");
+const migrationPaths = readdirSync(migrationsDir)
+  .sort()
+  .map((dir) => path.join(migrationsDir, dir, "migration.sql"))
+  .filter((p) => fs.existsSync(p));
 ```
 
-### `getDailyStoreCostSummary(days: number, storeId?: string)`
-
-Returns:
-```ts
-{
-  totalCost: number;
-  staffCost: number;
-  rentCost: number;
-  otherCost: number;
-  staffHours: number;
-  profit: number;          // sum(revenue) - sum(totalCost)  — requires join with DailyStoreMetric
-  costRatio: number;       // sum(totalCost) / sum(revenue)
-  revenuePerStaffHour: number; // sum(revenue) / sum(staffHours)
-}
-```
-
-Use `buildDateRanges(days)` from `src/lib/kpi/types` for the date window.
-Join `DailyStoreCost` and `DailyStoreMetric` on `[storeId, date]` in TypeScript
-(two parallel `findMany` queries, merge by key) — SQLite does not support
-cross-model aggregation in a single Prisma query cleanly.
-
-Export from `src/lib/kpi/index.ts`.
-
-This function is the foundation for the next dashboard task. No UI wiring in T18.
+Without this fix the seed integration test runs against a schema that is missing
+the three new models and will fail or silently skip the new seed steps.
 
 ---
 
@@ -327,10 +311,9 @@ npm test
 - [ ] `totalCost = staffCost + rentCost + otherCost`
 
 ### Causal chain sanity checks
-- [ ] LEI-01 `store_slump` days: `profit = revenue − totalCost` is negative on at least
-  some days (revenue drop ~38%, staff cost drop ~15%, rent fixed → net negative)
-- [ ] `promo_week` days show higher `staffHours` than adjacent non-scenario days
-  for the same store
+- [ ] LEI-01 `store_slump` days: staffHours are ~15% lower than adjacent non-scenario days
+- [ ] `promo_week` days show ~15% higher staffHours than adjacent non-scenario days for all stores
+- [ ] NUE-01 total daily cost exceeds daily rentCost by at least 2× (staff cost present)
 
 ---
 
@@ -339,20 +322,8 @@ npm test
 - `prisma/schema.prisma` — three new models, two new enums, two new Store relations
 - `prisma/migrations/<timestamp>_add_controlling_layer/migration.sql` — new migration
 - `prisma/seed.ts` — three new seed functions + constants
-- `src/lib/kpi/costs.ts` — new
-- `src/lib/kpi/index.ts` — new export
-- `src/lib/db/retail-seed.test.ts` — replace hardcoded migration path list with a
-  dynamic glob so the integration test automatically includes the new migration:
+- `src/lib/db/retail-seed.test.ts` — dynamic migration glob (see section 3)
 
-  ```ts
-  import { readdirSync } from "node:fs";
+## Dependency
 
-  const migrationsDir = path.join(workspaceDir, "prisma", "migrations");
-  const migrationPaths = readdirSync(migrationsDir)
-    .sort()
-    .map((dir) => path.join(migrationsDir, dir, "migration.sql"))
-    .filter((p) => fs.existsSync(p));
-  ```
-
-  Without this fix the seed integration test runs against a schema that is missing
-  the three new models and will fail or silently skip the new seed steps.
+None. This task is self-contained. T18b depends on T18a being merged and seeded.
