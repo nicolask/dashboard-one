@@ -12,6 +12,10 @@
 
 ## Soon After
 
+- category-level insights: extend the insights engine to generate scenario-aware sentences for category performance (e.g. "Beauty showing above-average growth since Promo Week start") — requires OrderItem aggregation by category, separate from DailyStoreMetric path
+
+
+
 - document environment variables and local setup
 - document the migration path from Railway demo hosting on SQLite to PostgreSQL once multi-instance deployment matters
 - plan migration path from local auth to OIDC
