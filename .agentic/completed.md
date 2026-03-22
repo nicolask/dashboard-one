@@ -5,6 +5,7 @@ Reference log of finished work. Not needed in active context — check here when
 ---
 
 - **T8** — alert list work superseded by `InsightPanel`; original collapsible `AlertPanel` task is no longer the active path
+- **T9** — KPI layer extended with store-scoped queries: `getTopProducts`, `getActiveAlerts`, benchmark snapshot; folded into T10 delivery
 - **T10** — store detail page and supporting store query layer implemented
 - **T11** — placeholder routes for `/users`, `/integrations`, `/settings` implemented
 - **T12** — explainable insights replaced the earlier alert-panel surface
@@ -15,5 +16,6 @@ Reference log of finished work. Not needed in active context — check here when
 - **T17** — test coverage hardening across KPI layer, auth, and key UI components
 - **T18a** — controlling schema + deterministic seed: `Employee`, `EmployeeWorkLog`, and `DailyStoreCost` added with a dedicated migration and seed-backed verification
 - **T18b** — controlling KPI layer: `getDailyStoreCostSummary` joins `DailyStoreCost` with `DailyStoreMetric` to expose cost totals, profit, cost ratio, and revenue per staff hour
+- **T19** — insight narratives tiered into active vs. historical context; insight cards now carry explicit date ranges and tense-aware wording to disambiguate current alerts from concluded scenarios
 - **T21** — controlling dashboard integration: P&L card row (EBIT-like Profit, Operating Cost, Cost Ratio, Rev/Staff Hour) added to overview and store detail pages; `getCostKpis` provides period-over-period deltas; cost metrics use inverted delta sign so rising costs show as negative
 - **T20** — Agentic Audit page at `/agentic`: LOC breakdown, time estimates, speedup comparison, conditions/Einordnung; `snapshot-data.ts` as single update point; three agentic KPI tiles on main dashboard; LOC snapshot SOP at `.agentic/prompts/loc-snapshot.md`

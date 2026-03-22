@@ -22,6 +22,7 @@ type InsightGroup = {
   storeName: string;
   durationDays: number;
   earliestDate: Date;
+  latestDate: Date;
   scenarioAvgRevenue: number;
   scenarioAvgConversion: number;
   scenarioAvgVisitors: number;
@@ -36,6 +37,8 @@ type BaselineSnapshot = {
 type InsightRuleInput = {
   group: InsightGroup;
   baseline: BaselineSnapshot;
+  isActive: boolean;
+  dateRangeLabel: string;
 };
 
 type InsightRuleResult = {
@@ -55,10 +58,14 @@ export type Insight = {
   detail: string;
   priority: number;
   durationDays: number;
+  isActive: boolean;
+  dateRangeLabel: string;
   deviationPercent: number;
   affectedMetric: AffectedMetric;
   storeUrl: string;
 };
+
+const ACTIVE_THRESHOLD_DAYS = 7;
 
 function getBaselineDeviation(current: number, baseline: number) {
   return baseline !== 0 ? (current - baseline) / baseline : 0;
@@ -82,6 +89,28 @@ function getDeviationText(deviationPercent: number, negativeWord: string, positi
 
 function titleizeScenarioSlug(scenarioSlug: string) {
   return scenarioSlug.replace(/_/g, " ").replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function formatDateRange(from: Date, to: Date) {
+  const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const fromMonth = monthNames[from.getMonth()];
+  const toMonth = monthNames[to.getMonth()];
+  const fromDay = from.getDate();
+  const toDay = to.getDate();
+
+  if (
+    from.getFullYear() === to.getFullYear() &&
+    from.getMonth() === to.getMonth() &&
+    fromDay === toDay
+  ) {
+    return `${fromMonth} ${fromDay}`;
+  }
+
+  if (fromMonth === toMonth) {
+    return `${fromMonth} ${fromDay}–${toDay}`;
+  }
+
+  return `${fromMonth} ${fromDay}–${toMonth} ${toDay}`;
 }
 
 function average(values: number[]) {
@@ -115,11 +144,21 @@ function buildInsightGroups(rows: InsightSourceRow[]): InsightGroup[] {
         (earliest, row) => (row.date < earliest ? row.date : earliest),
         groupRows[0].date,
       ),
+      latestDate: groupRows.reduce(
+        (latest, row) => (row.date > latest ? row.date : latest),
+        groupRows[0].date,
+      ),
       scenarioAvgRevenue: average(groupRows.map((row) => row.revenue)),
       scenarioAvgConversion: average(groupRows.map((row) => row.conversionRate)),
       scenarioAvgVisitors: average(groupRows.map((row) => row.visitors)),
     };
   });
+}
+
+function isScenarioActive(latestDate: Date, windowEnd: Date) {
+  const msPerDay = 24 * 60 * 60 * 1000;
+
+  return (windowEnd.getTime() - latestDate.getTime()) / msPerDay <= ACTIVE_THRESHOLD_DAYS;
 }
 
 function buildStoreBaselineWindows(groups: InsightGroup[]) {
@@ -211,7 +250,7 @@ function buildBaselineSnapshots(
 }
 
 const insightRules: Record<string, (input: InsightRuleInput) => InsightRuleResult> = {
-  store_slump: ({ group, baseline }) => {
+  store_slump: ({ group, baseline, isActive, dateRangeLabel }) => {
     const deviationPercent = getBaselineDeviation(group.scenarioAvgRevenue, baseline.avgRevenue);
     const visitorsStable =
       baseline.avgVisitors > 0 &&
@@ -221,11 +260,15 @@ const insightRules: Record<string, (input: InsightRuleInput) => InsightRuleResul
     return {
       affectedMetric: "revenue",
       deviationPercent,
-      headline: `${group.storeName} is ${getDeviationText(deviationPercent, "below", "above")} its prior-period average revenue${visitorClause}.`,
-      detail: `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over the last ${group.durationDays} days vs. ${formatRevenue(baseline.avgRevenue)} in the preceding period.`,
+      headline: isActive
+        ? `${group.storeName} is ${getDeviationText(deviationPercent, "below", "above")} its prior-period average revenue${visitorClause}.`
+        : `${group.storeName} was ${getDeviationText(deviationPercent, "below", "above")} its prior-period average revenue during ${dateRangeLabel}${visitorClause}.`,
+      detail: isActive
+        ? `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over the last ${group.durationDays} days vs. ${formatRevenue(baseline.avgRevenue)} in the preceding period.`
+        : `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over ${group.durationDays} days (${dateRangeLabel}) vs. ${formatRevenue(baseline.avgRevenue)} in the preceding period.`,
     };
   },
-  promo_week: ({ group, baseline }) => {
+  promo_week: ({ group, baseline, isActive, dateRangeLabel }) => {
     const deviationPercent = getBaselineDeviation(group.scenarioAvgRevenue, baseline.avgRevenue);
     const performanceText =
       deviationPercent < 0
@@ -238,11 +281,13 @@ const insightRules: Record<string, (input: InsightRuleInput) => InsightRuleResul
     return {
       affectedMetric: "revenue",
       deviationPercent,
-      headline: `${group.storeName} is showing ${performanceText} revenue since Promo Week began.`,
+      headline: isActive
+        ? `${group.storeName} is showing ${performanceText} revenue since Promo Week began.`
+        : `During Promo Week (${dateRangeLabel}), ${group.storeName} ran ${performanceText} vs. its prior-period average.`,
       detail: `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over ${group.durationDays} days — ${directionWord} from ${formatRevenue(baseline.avgRevenue)} in the prior period.`,
     };
   },
-  traffic_surge: ({ group, baseline }) => {
+  traffic_surge: ({ group, baseline, isActive, dateRangeLabel }) => {
     const deviationPercent = getBaselineDeviation(
       group.scenarioAvgConversion,
       baseline.avgConversion,
@@ -255,37 +300,56 @@ const insightRules: Record<string, (input: InsightRuleInput) => InsightRuleResul
     return {
       affectedMetric: "conversion",
       deviationPercent,
-      headline: `${group.storeName} saw a ${formatDeviationPercent(deviationPercent)} conversion drop despite a ${Math.abs(visitorChangePercent * 100).toFixed(1)}% visitor increase during the traffic surge.`,
-      detail: `Conversion averaged ${(group.scenarioAvgConversion * 100).toFixed(1)}% over ${group.durationDays} days vs. ${(baseline.avgConversion * 100).toFixed(1)}% prior - more footfall, fewer buyers.`,
+      headline: isActive
+        ? `${group.storeName} is seeing a ${formatDeviationPercent(deviationPercent)} conversion drop despite a ${Math.abs(visitorChangePercent * 100).toFixed(1)}% visitor increase during the traffic surge.`
+        : `During the traffic surge (${dateRangeLabel}), ${group.storeName} saw a ${formatDeviationPercent(deviationPercent)} conversion drop despite a ${Math.abs(visitorChangePercent * 100).toFixed(1)}% visitor increase.`,
+      detail: isActive
+        ? `Conversion averaged ${(group.scenarioAvgConversion * 100).toFixed(1)}% over ${group.durationDays} days vs. ${(baseline.avgConversion * 100).toFixed(1)}% prior - more footfall, fewer buyers.`
+        : `Conversion averaged ${(group.scenarioAvgConversion * 100).toFixed(1)}% over ${group.durationDays} days (${dateRangeLabel}) vs. ${(baseline.avgConversion * 100).toFixed(1)}% prior - more footfall, fewer buyers.`,
     };
   },
-  competitor_opening: ({ group, baseline }) => {
+  competitor_opening: ({ group, baseline, isActive, dateRangeLabel }) => {
     const deviationPercent = getBaselineDeviation(group.scenarioAvgRevenue, baseline.avgRevenue);
 
     return {
       affectedMetric: "revenue",
       deviationPercent,
-      headline: `${group.storeName} revenue is ${formatDeviationPercent(deviationPercent)} below baseline since a competitor opened nearby.`,
-      detail: `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over ${group.durationDays} days vs. ${formatRevenue(baseline.avgRevenue)} in the preceding period.`,
+      headline: isActive
+        ? `${group.storeName} revenue is ${formatDeviationPercent(deviationPercent)} below baseline since a competitor opened nearby.`
+        : `After a competitor opened nearby (${dateRangeLabel}), ${group.storeName} revenue ran ${formatDeviationPercent(deviationPercent)} below baseline.`,
+      detail: isActive
+        ? `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over ${group.durationDays} days vs. ${formatRevenue(baseline.avgRevenue)} in the preceding period.`
+        : `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over ${group.durationDays} days (${dateRangeLabel}) vs. ${formatRevenue(baseline.avgRevenue)} in the preceding period.`,
     };
   },
 };
 
-function buildFallbackInsight({ group, baseline }: InsightRuleInput): InsightRuleResult {
+function buildFallbackInsight({
+  group,
+  baseline,
+  isActive,
+  dateRangeLabel,
+}: InsightRuleInput): InsightRuleResult {
   const deviationPercent = getBaselineDeviation(group.scenarioAvgRevenue, baseline.avgRevenue);
   const dayLabel = group.durationDays === 1 ? "day" : "days";
 
   return {
     affectedMetric: "revenue",
     deviationPercent,
-    headline: `${group.storeName} has an active alert: ${titleizeScenarioSlug(group.scenarioSlug)} (${group.durationDays} ${dayLabel}).`,
+    headline: isActive
+      ? `${group.storeName} has an active alert: ${titleizeScenarioSlug(group.scenarioSlug)} (${group.durationDays} ${dayLabel}).`
+      : `${group.storeName} had an alert during ${dateRangeLabel}: ${titleizeScenarioSlug(group.scenarioSlug)} (${group.durationDays} ${dayLabel}).`,
     detail: `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} vs. a prior-period baseline of ${formatRevenue(baseline.avgRevenue)}.`,
   };
 }
 
-function buildInsight(group: InsightGroup, baseline: BaselineSnapshot): Insight {
+function buildInsight(group: InsightGroup, baseline: BaselineSnapshot, windowEnd: Date): Insight {
   const rule = insightRules[group.scenarioSlug];
-  const result = rule ? rule({ group, baseline }) : buildFallbackInsight({ group, baseline });
+  const isActive = isScenarioActive(group.latestDate, windowEnd);
+  const dateRangeLabel = formatDateRange(group.earliestDate, group.latestDate);
+  const result = rule
+    ? rule({ group, baseline, isActive, dateRangeLabel })
+    : buildFallbackInsight({ group, baseline, isActive, dateRangeLabel });
 
   return {
     id: `${group.scenarioSlug}:${group.storeId}`,
@@ -297,6 +361,8 @@ function buildInsight(group: InsightGroup, baseline: BaselineSnapshot): Insight 
     detail: result.detail,
     priority: Math.abs(result.deviationPercent),
     durationDays: group.durationDays,
+    isActive,
+    dateRangeLabel,
     deviationPercent: result.deviationPercent,
     affectedMetric: result.affectedMetric,
     storeUrl: `/stores/${group.storeId}`,
@@ -381,10 +447,22 @@ export async function getActiveInsights(days: number, storeId?: string): Promise
   const baselines = buildBaselineSnapshots(baselineRows, baselineWindows);
 
   return groups
-    .map((group) => buildInsight(group, baselines.get(group.storeId) ?? {
-      avgRevenue: 0,
-      avgConversion: 0,
-      avgVisitors: 0,
-    }))
-    .sort((left, right) => right.priority - left.priority);
+    .map((group) =>
+      buildInsight(
+        group,
+        baselines.get(group.storeId) ?? {
+          avgRevenue: 0,
+          avgConversion: 0,
+          avgVisitors: 0,
+        },
+        current.to,
+      ),
+    )
+    .sort((left, right) => {
+      if (left.isActive !== right.isActive) {
+        return left.isActive ? -1 : 1;
+      }
+
+      return right.priority - left.priority;
+    });
 }

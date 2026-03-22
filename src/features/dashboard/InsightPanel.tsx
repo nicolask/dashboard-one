@@ -46,13 +46,53 @@ function getDeviationClassName(deviationPercent: number) {
   return "bg-ink-100 text-ink-700";
 }
 
+function InsightCard({ insight }: { insight: Insight }) {
+  const scenario = getScenarioDisplay(insight.scenarioSlug);
+
+  return (
+    <div className="space-y-4 rounded-[1.5rem] border border-white/70 bg-white/45 px-4 py-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${scenario.className}`}>
+          {scenario.label}
+        </span>
+        <span className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-ink-900">
+          {insight.dateRangeLabel} · {formatDuration(insight.durationDays)}
+        </span>
+      </div>
+
+      <div>
+        <p className="font-medium text-ink-900">{insight.headline}</p>
+        <p className="mt-2 text-sm leading-6 text-ink-700">{insight.detail}</p>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <span
+          className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getDeviationClassName(insight.deviationPercent)}`}
+        >
+          {formatDeviation(insight.deviationPercent)}
+        </span>
+        <Link
+          className="text-sm font-medium text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
+          href={insight.storeUrl}
+        >
+          View store →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export function InsightPanel({ insights }: InsightPanelProps) {
+  const active = insights.filter((insight) => insight.isActive);
+  const historical = insights.filter((insight) => !insight.isActive);
+  const showTierHeaders = active.length > 0 && historical.length > 0;
+
   return (
     <Card className="space-y-5">
       <div>
         <p className="text-sm font-medium uppercase tracking-[0.18em] text-ink-700">Insights</p>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight text-ink-900">
-          Explainable active anomalies
+          Explainable performance signals
         </h2>
       </div>
 
@@ -62,46 +102,27 @@ export function InsightPanel({ insights }: InsightPanelProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          {insights.map((insight) => {
-            const scenario = getScenarioDisplay(insight.scenarioSlug);
+          {showTierHeaders ? (
+            <p className="px-1 text-xs font-semibold uppercase tracking-widest text-ink-500">
+              Active alerts
+            </p>
+          ) : null}
+          {active.map((insight) => (
+            <InsightCard insight={insight} key={insight.id} />
+          ))}
 
-            return (
-              <div
-                className="space-y-4 rounded-[1.5rem] border border-white/70 bg-white/45 px-4 py-4"
-                key={insight.id}
-              >
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${scenario.className}`}
-                  >
-                    {scenario.label}
-                  </span>
-                  <span className="inline-flex rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-ink-900">
-                    {formatDuration(insight.durationDays)}
-                  </span>
-                </div>
-
-                <div>
-                  <p className="font-medium text-ink-900">{insight.headline}</p>
-                  <p className="mt-2 text-sm leading-6 text-ink-700">{insight.detail}</p>
-                </div>
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <span
-                    className={`inline-flex rounded-full px-3 py-1 text-sm font-semibold ${getDeviationClassName(insight.deviationPercent)}`}
-                  >
-                    {formatDeviation(insight.deviationPercent)}
-                  </span>
-                  <Link
-                    className="text-sm font-medium text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500"
-                    href={insight.storeUrl}
-                  >
-                    View store →
-                  </Link>
-                </div>
-              </div>
-            );
-          })}
+          {historical.length > 0 ? (
+            <>
+              {showTierHeaders ? (
+                <p className="px-1 pt-2 text-xs font-semibold uppercase tracking-widest text-ink-500">
+                  Historical context
+                </p>
+              ) : null}
+              {historical.map((insight) => (
+                <InsightCard insight={insight} key={insight.id} />
+              ))}
+            </>
+          ) : null}
         </div>
       )}
     </Card>

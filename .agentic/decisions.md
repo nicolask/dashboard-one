@@ -112,6 +112,12 @@ For Railway specifically, the deploy flow is cleaner when migration runs in pre-
 
 ## 2026-03-22
 
+### Insight cards are split into active and historical tiers with a 7-day threshold
+
+`InsightPanel` separates insights into two display tiers: *active* (scenario's latest alert date within 7 days of the query window end) and *historical context* (older than that). Insight rule wording switches tense accordingly — present tense for active, past tense with an explicit date range for historical. The 7-day constant (`ACTIVE_THRESHOLD_DAYS`) is a product decision, not a technical default, and should not be changed without considering the narrative consequences across all four scenario rules and the fallback.
+
+Section headers ("Active alerts" / "Historical context") are only rendered when both tiers are non-empty; a store with a single insight tier sees no header.
+
 ### Profit is defined as gross margin minus operating costs, not revenue minus operating costs
 
 `profit = sum(marginAmount) − sum(totalCost)` throughout the controlling layer.

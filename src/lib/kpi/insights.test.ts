@@ -21,7 +21,7 @@ describe("getActiveInsights", () => {
     vi.useRealTimers();
   });
 
-  it("groups rows by scenario and store, builds store baselines, and sorts by priority", async () => {
+  it("groups rows by scenario and store, builds store baselines, and sorts active insights ahead of historical ones", async () => {
     findManyMock
       .mockResolvedValueOnce([
         {
@@ -174,11 +174,19 @@ describe("getActiveInsights", () => {
     );
     const fallbackInsight = insights.find((insight) => insight.id === "ops_issue:store-berlin");
 
-    expect(insights[0]?.priority).toBeGreaterThanOrEqual(insights[1]?.priority ?? 0);
+    expect(insights.map((insight) => insight.id)).toEqual([
+      "promo_week:store-berlin",
+      "store_slump:store-leipzig",
+      "ops_issue:store-berlin",
+      "traffic_surge:store-hamburg",
+      "competitor_opening:store-munich",
+    ]);
     expect(promoInsight).toMatchObject({
       id: "promo_week:store-berlin",
       storeId: "store-berlin",
       durationDays: 1,
+      isActive: true,
+      dateRangeLabel: "Mar 18",
       deviationPercent: 1.6,
       storeUrl: "/stores/store-berlin",
     });
@@ -187,10 +195,12 @@ describe("getActiveInsights", () => {
     expect(trafficSurgeInsight).toMatchObject({
       id: "traffic_surge:store-hamburg",
       durationDays: 2,
+      isActive: true,
+      dateRangeLabel: "Mar 15–16",
       affectedMetric: "conversion",
     });
     expect(trafficSurgeInsight?.deviationPercent).toBeCloseTo(-0.425, 10);
-    expect(trafficSurgeInsight?.headline).toContain("42.5% conversion drop");
+    expect(trafficSurgeInsight?.headline).toContain("is seeing a 42.5% conversion drop");
     expect(trafficSurgeInsight?.headline).toContain("47.5% visitor increase");
     expect(trafficSurgeInsight?.detail).toContain(
       "Conversion averaged 11.5% over 2 days vs. 20.0% prior",
@@ -199,6 +209,8 @@ describe("getActiveInsights", () => {
     expect(storeSlumpInsight).toMatchObject({
       id: "store_slump:store-leipzig",
       durationDays: 2,
+      isActive: true,
+      dateRangeLabel: "Mar 19–20",
       deviationPercent: -0.6,
       affectedMetric: "revenue",
     });
@@ -209,13 +221,22 @@ describe("getActiveInsights", () => {
     expect(competitorInsight).toMatchObject({
       id: "competitor_opening:store-munich",
       durationDays: 2,
+      isActive: false,
+      dateRangeLabel: "Mar 13–14",
       affectedMetric: "revenue",
     });
     expect(competitorInsight?.deviationPercent).toBeCloseTo(-0.375, 10);
+    expect(competitorInsight?.headline).toContain("After a competitor opened nearby (Mar 13–14)");
     expect(competitorInsight?.headline).toContain("37.5% below baseline");
     expect(competitorInsight?.detail).toContain("€125.00");
     expect(competitorInsight?.detail).toContain("€200.00");
+    expect(competitorInsight?.detail).toContain("Mar 13–14");
 
+    expect(fallbackInsight).toMatchObject({
+      isActive: true,
+      dateRangeLabel: "Mar 17",
+    });
+    expect(fallbackInsight?.headline).toContain("has an active alert");
     expect(fallbackInsight?.headline).toContain("Ops Issue (1 day)");
     expect(fallbackInsight?.detail).toContain("prior-period baseline");
   });
@@ -241,5 +262,9 @@ describe("getActiveInsights", () => {
     expect(insights).toHaveLength(1);
     expect(insights[0].deviationPercent).toBe(0);
     expect(insights[0].headline).toContain("0.0% in line with");
+    expect(insights[0]).toMatchObject({
+      isActive: true,
+      dateRangeLabel: "Mar 20",
+    });
   });
 });
