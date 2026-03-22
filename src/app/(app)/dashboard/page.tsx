@@ -1,7 +1,7 @@
 import { DashboardFrame } from "@/components/layout/dashboard-frame";
 import { Card } from "@/components/ui/card";
-import { AlertPanel } from "@/features/dashboard/AlertPanel";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
+import { InsightPanel } from "@/features/dashboard/InsightPanel";
 import { CategoryPerformanceList } from "@/features/dashboard/CategoryPerformanceList";
 import { KpiCard } from "@/features/dashboard/KpiCard";
 import { KpiChart } from "@/features/dashboard/KpiChart";
@@ -10,7 +10,7 @@ import { TopProductsTable } from "@/features/dashboard/TopProductsTable";
 import { getMetricsTimeSeries } from "@/lib/kpi/timeseries";
 import {
   getAvgBasketKpi,
-  getActiveAlerts,
+  getActiveInsights,
   getCategoryPerformance,
   getConversionKpi,
   getOrdersKpi,
@@ -61,7 +61,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     orders,
     basket,
     conversion,
-    alerts,
+    insights,
     storeRanking,
     categoryPerformance,
     topProducts,
@@ -72,7 +72,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       getOrdersKpi(days),
       getAvgBasketKpi(days),
       getConversionKpi(days),
-      getActiveAlerts(30),
+      getActiveInsights(30),
       getStoreRanking(days),
       getCategoryPerformance(days),
       getTopProducts(days),
@@ -124,7 +124,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
 
         <KpiChart days={days} initialData={revenueTimeSeries} />
 
-        <AlertPanel alerts={alerts} />
+        <InsightPanel insights={insights} />
 
         <StoreRankingTable entries={storeRanking} />
 

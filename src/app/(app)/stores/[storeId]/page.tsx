@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { DashboardFrame } from "@/components/layout/dashboard-frame";
-import { AlertPanel } from "@/features/dashboard/AlertPanel";
 import { DayRangeSelector } from "@/features/dashboard/DayRangeSelector";
+import { InsightPanel } from "@/features/dashboard/InsightPanel";
 import { KpiCard } from "@/features/dashboard/KpiCard";
 import { KpiChart } from "@/features/dashboard/KpiChart";
 import { TopProductsTable } from "@/features/dashboard/TopProductsTable";
@@ -13,7 +13,7 @@ import {
   formatConversion,
   formatOrders,
   formatRevenue,
-  getActiveAlerts,
+  getActiveInsights,
   getAvgBasketKpi,
   getConversionKpi,
   getOrdersKpi,
@@ -47,7 +47,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
     notFound();
   }
 
-  const [revenue, orders, basket, conversion, timeseries, products, alerts, benchmark] =
+  const [revenue, orders, basket, conversion, timeseries, products, insights, benchmark] =
     await Promise.all([
       getRevenueKpi(days, storeId),
       getOrdersKpi(days, storeId),
@@ -55,7 +55,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
       getConversionKpi(days, storeId),
       getMetricsTimeSeries(days, "revenue", storeId),
       getTopProducts(days, storeId),
-      getActiveAlerts(30, storeId),
+      getActiveInsights(30, storeId),
       getStoreBenchmark(storeId, days),
     ]);
 
@@ -64,7 +64,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
       activePath="/dashboard"
       eyebrow="Store Detail"
       title={store.name}
-      description="Drill into store-scoped KPIs, benchmark performance, top products, and active alerts for a single location."
+      description="Drill into store-scoped KPIs, benchmark performance, top products, and explainable insights for a single location."
     >
       <section className="space-y-5">
         <StoreDetailHeader store={store} />
@@ -106,7 +106,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <TopProductsTable entries={products} />
-          <AlertPanel alerts={alerts} />
+          <InsightPanel insights={insights} />
         </div>
       </section>
     </DashboardFrame>
