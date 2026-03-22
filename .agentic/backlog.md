@@ -32,6 +32,7 @@
 
 
 - mobile layout pass: dashboard is designed for desktop; investigate collapsing StoreBenchmarkRow reference lines (three per card → toggle or accordion), KPI grid stacking, and StoreRankingTable horizontal scroll on small screens — scope as a dedicated sprint once the core feature set stabilises
+- employee drilldown view: store-level breakdown of headcount, hours worked, and staff cost contribution per role — data will exist after T18; natural follow-on to the controlling layer; scope as a dedicated store detail section or separate page
 - LLM-generated benchmark narrative: `StoreBenchmark` already carries `storeFormat`, `networkStoreCount`, `formatStoreCount`, `topQuartileStoreCount`, and all snapshot values — use these as a structured prompt payload to generate sentences like "Berlin Flagship liegt 12% über dem Durchschnitt der 8 Flagship-Stores, aber Conversion ist unterdurchschnittlich"; consider whether this extends InsightPanel or becomes a separate narrative block on the store detail page
 - add external system integration patterns
 - define caching and sync models
