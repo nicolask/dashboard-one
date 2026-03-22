@@ -6,6 +6,7 @@ import type { StoreRankingEntry } from "@/lib/kpi";
 
 type StoreRankingTableProps = {
   entries: StoreRankingEntry[];
+  days: number;
 };
 
 function formatGrowth(delta: number) {
@@ -13,7 +14,7 @@ function formatGrowth(delta: number) {
   return `${sign}${Math.abs(delta * 100).toFixed(1)} %`;
 }
 
-export function StoreRankingTable({ entries }: StoreRankingTableProps) {
+export function StoreRankingTable({ entries, days }: StoreRankingTableProps) {
   return (
     <Card className="overflow-hidden p-0">
       <div className="border-b border-white/70 px-6 py-5">
@@ -83,12 +84,17 @@ export function StoreRankingTable({ entries }: StoreRankingTableProps) {
                   </tr>
                   <tr className={rowToneClassName}>
                     <td className="px-6 pb-4 pt-0 text-xs text-ink-500" colSpan={7}>
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 border-t border-white/60 pt-3">
-                        <span className="uppercase tracking-[0.12em]">Revenue growth</span>
-                        <span className={`font-medium ${growthClassName}`}>
-                          {formatGrowth(entry.revenueGrowth)}
-                        </span>
-                        <span>vs. previous period</span>
+                      <div className="border-t border-white/60 pt-3">
+                        <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                          <span className="text-ink-500/80">
+                            {`Revenue growth vs. previous ${days}d:`}
+                          </span>
+                          <span
+                            className={`shrink-0 font-medium tabular-nums ${growthClassName}`}
+                          >
+                            {formatGrowth(entry.revenueGrowth)}
+                          </span>
+                        </div>
                       </div>
                     </td>
                   </tr>
