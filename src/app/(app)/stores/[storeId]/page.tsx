@@ -56,7 +56,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
       getMetricsTimeSeries(days, "revenue", storeId),
       getTopProducts(days, storeId),
       getActiveInsights(30, storeId),
-      getStoreBenchmark(storeId, days),
+      getStoreBenchmark(storeId, days, store.format),
     ]);
 
   return (
@@ -75,7 +75,7 @@ export default async function StoreDetailPage({ params, searchParams }: StoreDet
               Time Range
             </p>
             <p className="mt-2 text-sm leading-6 text-ink-700">
-              Compare this store against its own previous period and the current all-store average.
+              Compare this store against its own previous period and three peer benchmarks: network average, format average, and top-quartile.
             </p>
           </div>
           <DayRangeSelector currentDays={days} />

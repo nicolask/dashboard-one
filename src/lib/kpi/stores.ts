@@ -22,7 +22,13 @@ export type StoreBenchmarkSnapshot = {
 
 export type StoreBenchmark = {
   store: StoreBenchmarkSnapshot;
-  average: StoreBenchmarkSnapshot;
+  networkAverage: StoreBenchmarkSnapshot;
+  formatAverage: StoreBenchmarkSnapshot;
+  topQuartile: StoreBenchmarkSnapshot;
+  storeFormat: string;
+  networkStoreCount: number;
+  formatStoreCount: number;
+  topQuartileStoreCount: number;
 };
 
 export type StoreRankingEntry = {
@@ -51,12 +57,7 @@ function buildBenchmarkSnapshot(
   metrics: Array<{ revenue: number; orders: number; conversionRate: number }>,
 ): StoreBenchmarkSnapshot {
   if (metrics.length === 0) {
-    return {
-      revenue: 0,
-      orders: 0,
-      avgBasketValue: 0,
-      conversionRate: 0,
-    };
+    return emptyBenchmarkSnapshot();
   }
 
   let revenue = 0;
@@ -79,12 +80,7 @@ function buildBenchmarkSnapshot(
 
 function averageSnapshots(snapshots: StoreBenchmarkSnapshot[]): StoreBenchmarkSnapshot {
   if (snapshots.length === 0) {
-    return {
-      revenue: 0,
-      orders: 0,
-      avgBasketValue: 0,
-      conversionRate: 0,
-    };
+    return emptyBenchmarkSnapshot();
   }
 
   let revenue = 0;
@@ -104,6 +100,15 @@ function averageSnapshots(snapshots: StoreBenchmarkSnapshot[]): StoreBenchmarkSn
     orders: orders / snapshots.length,
     avgBasketValue: avgBasketValue / snapshots.length,
     conversionRate: conversionRate / snapshots.length,
+  };
+}
+
+function emptyBenchmarkSnapshot(): StoreBenchmarkSnapshot {
+  return {
+    revenue: 0,
+    orders: 0,
+    avgBasketValue: 0,
+    conversionRate: 0,
   };
 }
 
@@ -129,7 +134,11 @@ export async function getStoreById(storeId: string): Promise<StoreDetail | null>
   };
 }
 
-export async function getStoreBenchmark(storeId: string, days: number): Promise<StoreBenchmark> {
+export async function getStoreBenchmark(
+  storeId: string,
+  days: number,
+  storeFormat: string,
+): Promise<StoreBenchmark> {
   const { current } = buildDateRanges(days);
 
   const [storeMetrics, allMetrics] = await Promise.all([
@@ -143,35 +152,66 @@ export async function getStoreBenchmark(storeId: string, days: number): Promise<
     }),
     prisma.dailyStoreMetric.findMany({
       where: buildMetricWhere(current),
-      select: {
-        storeId: true,
-        revenue: true,
-        orders: true,
-        conversionRate: true,
+      include: {
+        store: {
+          select: {
+            format: true,
+          },
+        },
       },
     }),
   ]);
 
   const groupedMetrics = new Map<
     string,
-    Array<{ revenue: number; orders: number; conversionRate: number }>
+    {
+      format: string;
+      metrics: Array<{ revenue: number; orders: number; conversionRate: number }>;
+    }
   >();
 
   for (const metric of allMetrics) {
-    const storeEntries = groupedMetrics.get(metric.storeId) ?? [];
-    storeEntries.push({
+    const groupedStore =
+      groupedMetrics.get(metric.storeId) ??
+      {
+        format: metric.store.format,
+        metrics: [],
+      };
+
+    groupedStore.metrics.push({
       revenue: metric.revenue,
       orders: metric.orders,
       conversionRate: metric.conversionRate,
     });
-    groupedMetrics.set(metric.storeId, storeEntries);
+    groupedMetrics.set(metric.storeId, {
+      format: groupedStore.format,
+      metrics: groupedStore.metrics,
+    });
   }
+
+  const allStoreSnapshots = Array.from(groupedMetrics.values(), (groupedStore) => ({
+    format: groupedStore.format,
+    snapshot: buildBenchmarkSnapshot(groupedStore.metrics),
+  }));
+  const formatSnapshots = allStoreSnapshots
+    .filter((groupedStore) => groupedStore.format === storeFormat)
+    .map((groupedStore) => groupedStore.snapshot);
+  const topQuartileCount =
+    allStoreSnapshots.length > 0 ? Math.ceil(allStoreSnapshots.length * 0.25) : 0;
+  const topQuartileSnapshots = [...allStoreSnapshots]
+    .sort((left, right) => right.snapshot.revenue - left.snapshot.revenue)
+    .slice(0, topQuartileCount)
+    .map((groupedStore) => groupedStore.snapshot);
 
   return {
     store: buildBenchmarkSnapshot(storeMetrics),
-    average: averageSnapshots(
-      Array.from(groupedMetrics.values(), (metrics) => buildBenchmarkSnapshot(metrics)),
-    ),
+    networkAverage: averageSnapshots(allStoreSnapshots.map((groupedStore) => groupedStore.snapshot)),
+    formatAverage: averageSnapshots(formatSnapshots),
+    topQuartile: averageSnapshots(topQuartileSnapshots),
+    storeFormat,
+    networkStoreCount: allStoreSnapshots.length,
+    formatStoreCount: formatSnapshots.length,
+    topQuartileStoreCount: topQuartileSnapshots.length,
   };
 }
 
