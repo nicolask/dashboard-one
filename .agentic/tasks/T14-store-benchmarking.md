@@ -1,5 +1,14 @@
 # T14 – Extended Store Benchmarking
 
+## Status
+
+Implemented on 2026-03-22.
+
+The store detail benchmark now compares each KPI against three simultaneous
+reference groups: network average, same-format average, and top quartile by
+revenue. The data layer also returns `storeFormat` plus the corresponding
+store-count fields for future narrative generation.
+
 ## Context
 
 `StoreBenchmarkRow` currently compares a store against the equal-weighted average
@@ -176,4 +185,3 @@ npm test
 - `src/features/stores/StoreBenchmarkRow.tsx` — three reference lines per card
 - `src/lib/kpi/stores.test.ts` — update `result.average` references to `result.networkAverage`
   (T17 added tests against the current field name; this rename will break them)
-

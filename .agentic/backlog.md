@@ -57,3 +57,4 @@
 - T11: placeholder routes for users, integrations, and settings are implemented
 - T12: explainable insights replaced the earlier alert-panel surface
 - T13: period comparison — dynamic `vs. previous Nd` labels on all KPI tiles, conversion delta in pp, revenue growth indicator per store in StoreRankingTable
+- T14: extended store benchmarking — `StoreBenchmarkRow` now shows three reference lines per KPI card (network avg, format avg, top 25%); `StoreBenchmark` type extended with `formatAverage`, `topQuartile`, and store-count fields
