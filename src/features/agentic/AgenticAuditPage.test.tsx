@@ -10,7 +10,10 @@ describe("AgenticAuditPage", () => {
 
     expect(screen.getByText("Agentic Development Audit")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { level: 2, name: /retail dashboard — in ~14h/i }),
+      screen.getByRole("heading", {
+        level: 2,
+        name: new RegExp(`retail dashboard — in ~${snapshot.actualHours}h`, "i"),
+      }),
     ).toBeInTheDocument();
     expect(screen.getByText("Einordnung")).toBeInTheDocument();
     expect(screen.getByRole("heading", { level: 2, name: /code volume by workstream/i })).toBeInTheDocument();
