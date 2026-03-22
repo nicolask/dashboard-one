@@ -48,6 +48,16 @@ describe("ScenarioTimeline", () => {
           storeName: "Leipzig Gohlis",
           storeUrl: "/stores/store-1",
         },
+        {
+          slug: "traffic_surge",
+          label: "Traffic Surge",
+          startDate: "2026-02-10",
+          endDate: "2026-02-17",
+          affectedStoreCount: 1,
+          storeId: "store-2",
+          storeName: "Hamburg Altona",
+          storeUrl: "/stores/store-2",
+        },
       ],
     };
 
@@ -59,10 +69,16 @@ describe("ScenarioTimeline", () => {
     ).toBeInTheDocument();
     expect(screen.getByText("Promo Week")).toBeInTheDocument();
     expect(screen.getByText("Store Slump · Leipzig Gohlis")).toBeInTheDocument();
+    expect(screen.getByText("Traffic Surge · Hamburg Altona")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Store Slump · Leipzig Gohlis" })).toHaveAttribute(
       "href",
       "/stores/store-1",
     );
+    expect(screen.getByRole("link", { name: "Traffic Surge · Hamburg Altona" })).toHaveAttribute(
+      "href",
+      "/stores/store-2",
+    );
+    expect(screen.getByText("10 Feb 26-17 Feb 26")).toBeInTheDocument();
     expect(screen.getByText("1 Mar 26-7 Mar 26")).toBeInTheDocument();
     expect(screen.getByText("15 Mar 26-20 Mar 26")).toBeInTheDocument();
     expect(screen.getByText("1 Jan 26")).toBeInTheDocument();

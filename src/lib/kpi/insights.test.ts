@@ -60,6 +60,42 @@ describe("getActiveInsights", () => {
           visitors: 170,
           store: { id: "store-berlin", code: "BER-02", name: "Berlin Mitte" },
         },
+        {
+          date: new Date("2026-03-16T00:00:00.000Z"),
+          storeId: "store-hamburg",
+          scenarioSlug: "traffic_surge",
+          revenue: 210,
+          conversionRate: 0.12,
+          visitors: 290,
+          store: { id: "store-hamburg", code: "HAM-01", name: "Hamburg Altona" },
+        },
+        {
+          date: new Date("2026-03-15T00:00:00.000Z"),
+          storeId: "store-hamburg",
+          scenarioSlug: "traffic_surge",
+          revenue: 205,
+          conversionRate: 0.11,
+          visitors: 300,
+          store: { id: "store-hamburg", code: "HAM-01", name: "Hamburg Altona" },
+        },
+        {
+          date: new Date("2026-03-14T00:00:00.000Z"),
+          storeId: "store-munich",
+          scenarioSlug: "competitor_opening",
+          revenue: 130,
+          conversionRate: 0.08,
+          visitors: 145,
+          store: { id: "store-munich", code: "MUC-01", name: "München Maxvorstadt" },
+        },
+        {
+          date: new Date("2026-03-13T00:00:00.000Z"),
+          storeId: "store-munich",
+          scenarioSlug: "competitor_opening",
+          revenue: 120,
+          conversionRate: 0.09,
+          visitors: 140,
+          store: { id: "store-munich", code: "MUC-01", name: "München Maxvorstadt" },
+        },
       ])
       .mockResolvedValueOnce([
         {
@@ -90,6 +126,20 @@ describe("getActiveInsights", () => {
           conversionRate: 0.1,
           visitors: 120,
         },
+        {
+          storeId: "store-hamburg",
+          date: new Date("2026-03-12T00:00:00.000Z"),
+          revenue: 220,
+          conversionRate: 0.2,
+          visitors: 200,
+        },
+        {
+          storeId: "store-munich",
+          date: new Date("2026-03-12T00:00:00.000Z"),
+          revenue: 200,
+          conversionRate: 0.1,
+          visitors: 150,
+        },
       ]);
 
     const { getActiveInsights } = await import("@/lib/kpi/insights");
@@ -107,33 +157,67 @@ describe("getActiveInsights", () => {
       2,
       expect.objectContaining({
         where: expect.objectContaining({
-          storeId: { in: ["store-leipzig", "store-berlin"] },
+          storeId: {
+            in: ["store-leipzig", "store-berlin", "store-hamburg", "store-munich"],
+          },
         }),
       }),
     );
 
-    expect(insights).toHaveLength(3);
-    expect(insights[0]).toMatchObject({
+    expect(insights).toHaveLength(5);
+
+    const promoInsight = insights.find((insight) => insight.id === "promo_week:store-berlin");
+    const trafficSurgeInsight = insights.find((insight) => insight.id === "traffic_surge:store-hamburg");
+    const storeSlumpInsight = insights.find((insight) => insight.id === "store_slump:store-leipzig");
+    const competitorInsight = insights.find(
+      (insight) => insight.id === "competitor_opening:store-munich",
+    );
+    const fallbackInsight = insights.find((insight) => insight.id === "ops_issue:store-berlin");
+
+    expect(insights[0]?.priority).toBeGreaterThanOrEqual(insights[1]?.priority ?? 0);
+    expect(promoInsight).toMatchObject({
       id: "promo_week:store-berlin",
       storeId: "store-berlin",
       durationDays: 1,
       deviationPercent: 1.6,
       storeUrl: "/stores/store-berlin",
     });
-    expect(insights[0].headline).toContain("160.0% above-average revenue");
+    expect(promoInsight?.headline).toContain("160.0% above-average revenue");
 
-    expect(insights[1]).toMatchObject({
+    expect(trafficSurgeInsight).toMatchObject({
+      id: "traffic_surge:store-hamburg",
+      durationDays: 2,
+      affectedMetric: "conversion",
+    });
+    expect(trafficSurgeInsight?.deviationPercent).toBeCloseTo(-0.425, 10);
+    expect(trafficSurgeInsight?.headline).toContain("42.5% conversion drop");
+    expect(trafficSurgeInsight?.headline).toContain("47.5% visitor increase");
+    expect(trafficSurgeInsight?.detail).toContain(
+      "Conversion averaged 11.5% over 2 days vs. 20.0% prior",
+    );
+
+    expect(storeSlumpInsight).toMatchObject({
       id: "store_slump:store-leipzig",
       durationDays: 2,
       deviationPercent: -0.6,
       affectedMetric: "revenue",
     });
-    expect(insights[1].headline).toContain("60.0% below");
-    expect(insights[1].headline).toContain("with stable visitor numbers");
-    expect(insights[1].detail).toContain("over the last 2 days");
+    expect(storeSlumpInsight?.headline).toContain("60.0% below");
+    expect(storeSlumpInsight?.headline).toContain("with stable visitor numbers");
+    expect(storeSlumpInsight?.detail).toContain("over the last 2 days");
 
-    expect(insights[2].headline).toContain("Ops Issue (1 day)");
-    expect(insights[2].detail).toContain("prior-period baseline");
+    expect(competitorInsight).toMatchObject({
+      id: "competitor_opening:store-munich",
+      durationDays: 2,
+      affectedMetric: "revenue",
+    });
+    expect(competitorInsight?.deviationPercent).toBeCloseTo(-0.375, 10);
+    expect(competitorInsight?.headline).toContain("37.5% below baseline");
+    expect(competitorInsight?.detail).toContain("€125.00");
+    expect(competitorInsight?.detail).toContain("€200.00");
+
+    expect(fallbackInsight?.headline).toContain("Ops Issue (1 day)");
+    expect(fallbackInsight?.detail).toContain("prior-period baseline");
   });
 
   it("is zero-safe when there is no baseline revenue", async () => {

@@ -313,6 +313,32 @@ const SCENARIOS: Scenario[] = [
     },
   },
   {
+    slug: "traffic_surge",
+    description:
+      "Hamburg: lokales Event treibt Traffic, verdünnt Conversion und Basket-Wert",
+    startDaysAgo: 60,
+    durationDays: 8,
+    storeCode: "HAM-01",
+    effects: {
+      trafficMultiplier: 1.45,
+      conversionMultiplier: 0.81,
+      basketMultiplier: 0.91,
+    },
+  },
+  {
+    slug: "competitor_opening",
+    description:
+      "München: neuer Wettbewerber in der Nähe - anhaltender Traffic- und Conversion-Druck",
+    startDaysAgo: 52,
+    durationDays: 30,
+    storeCode: "MUC-01",
+    effects: {
+      trafficMultiplier: 0.79,
+      conversionMultiplier: 0.87,
+      basketMultiplier: 0.97,
+    },
+  },
+  {
     slug: "store_slump",
     description:
       "Conversion-Einbruch in Leipzig: internes Problem, sichtbar als Alert",
@@ -525,24 +551,28 @@ async function generateDailyMetrics(storeMap: Map<string, string>) {
         Math.max(0, 0.025 + (effects.returnRateBoost ?? 0) + rng.normal(0, 0.008)),
       );
 
+      const dailyMetricData = {
+        revenue,
+        orders,
+        itemsSold,
+        avgBasketValue,
+        avgItemsPerOrder,
+        visitors,
+        conversionRate: Math.round(conversionRate * 10000) / 10000,
+        discountRate: Math.round(discountRate * 10000) / 10000,
+        returnRate: Math.round(returnRate * 10000) / 10000,
+        marginAmount,
+        marginRate,
+        scenarioSlug: scenario?.slug ?? null,
+      };
+
       await prisma.dailyStoreMetric.upsert({
         where: { date_storeId: { date, storeId } },
-        update: {},
+        update: dailyMetricData,
         create: {
           date,
           storeId,
-          revenue,
-          orders,
-          itemsSold,
-          avgBasketValue,
-          avgItemsPerOrder,
-          visitors,
-          conversionRate: Math.round(conversionRate * 10000) / 10000,
-          discountRate: Math.round(discountRate * 10000) / 10000,
-          returnRate: Math.round(returnRate * 10000) / 10000,
-          marginAmount,
-          marginRate,
-          scenarioSlug: scenario?.slug ?? null,
+          ...dailyMetricData,
         },
       });
 

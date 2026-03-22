@@ -23,6 +23,14 @@ function getScenarioFill(slug: string) {
     return "rgb(251 191 36 / 0.9)";
   }
 
+  if (slug === "traffic_surge") {
+    return "rgb(56 189 248 / 0.9)";
+  }
+
+  if (slug === "competitor_opening") {
+    return "rgb(167 139 250 / 0.9)";
+  }
+
   if (slug === "store_slump") {
     return "rgb(251 113 133 / 0.9)";
   }

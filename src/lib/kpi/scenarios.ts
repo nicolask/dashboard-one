@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db/prisma";
 const SCENARIO_LABELS: Record<string, string> = {
   promo_week: "Promo Week",
   store_slump: "Store Slump",
+  traffic_surge: "Traffic Surge",
+  competitor_opening: "Competitor Opening",
 };
 
 export type ScenarioSpan = {

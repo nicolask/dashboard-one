@@ -242,6 +242,33 @@ const insightRules: Record<string, (input: InsightRuleInput) => InsightRuleResul
       detail: `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over ${group.durationDays} days — ${directionWord} from ${formatRevenue(baseline.avgRevenue)} in the prior period.`,
     };
   },
+  traffic_surge: ({ group, baseline }) => {
+    const deviationPercent = getBaselineDeviation(
+      group.scenarioAvgConversion,
+      baseline.avgConversion,
+    );
+    const visitorChangePercent = getBaselineDeviation(
+      group.scenarioAvgVisitors,
+      baseline.avgVisitors,
+    );
+
+    return {
+      affectedMetric: "conversion",
+      deviationPercent,
+      headline: `${group.storeName} saw a ${formatDeviationPercent(deviationPercent)} conversion drop despite a ${Math.abs(visitorChangePercent * 100).toFixed(1)}% visitor increase during the traffic surge.`,
+      detail: `Conversion averaged ${(group.scenarioAvgConversion * 100).toFixed(1)}% over ${group.durationDays} days vs. ${(baseline.avgConversion * 100).toFixed(1)}% prior - more footfall, fewer buyers.`,
+    };
+  },
+  competitor_opening: ({ group, baseline }) => {
+    const deviationPercent = getBaselineDeviation(group.scenarioAvgRevenue, baseline.avgRevenue);
+
+    return {
+      affectedMetric: "revenue",
+      deviationPercent,
+      headline: `${group.storeName} revenue is ${formatDeviationPercent(deviationPercent)} below baseline since a competitor opened nearby.`,
+      detail: `Revenue averaged ${formatRevenue(group.scenarioAvgRevenue)} over ${group.durationDays} days vs. ${formatRevenue(baseline.avgRevenue)} in the preceding period.`,
+    };
+  },
 };
 
 function buildFallbackInsight({ group, baseline }: InsightRuleInput): InsightRuleResult {

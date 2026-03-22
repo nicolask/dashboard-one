@@ -9,6 +9,11 @@ type InsightPanelProps = {
 const SCENARIO_CONFIG: Record<string, { label: string; className: string }> = {
   store_slump: { label: "Store Slump", className: "bg-rose-100 text-rose-800" },
   promo_week: { label: "Promo Week", className: "bg-amber-100 text-amber-800" },
+  traffic_surge: { label: "Traffic Surge", className: "bg-sky-100 text-sky-800" },
+  competitor_opening: {
+    label: "Competitor Opening",
+    className: "bg-violet-100 text-violet-800",
+  },
 };
 
 function getScenarioDisplay(scenarioSlug: string) {

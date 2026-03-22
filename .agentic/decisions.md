@@ -94,6 +94,14 @@ The `ScenarioTimeline` strip renders the coloured scenario bands as SVG `<rect>`
 
 CSS `absolute` child divs were tried first but produced sub-pixel rounding artefacts in Safari — bands misaligned or disappeared at certain viewport widths. SVG with `preserveAspectRatio="none"` resolves this because the browser scales the coordinate space rather than rounding individual percentage widths. The tradeoff is a slightly more complex component (two rendering layers: SVG for visuals, div overlay for interaction), but the cross-browser consistency is worth it.
 
+### ScenarioTimeline and InsightPanel operate on different time horizons
+
+`ScenarioTimeline` always queries the full 120-day seeded window, independent of the day-range filter. `InsightPanel` / `getActiveInsights` uses a 30-day rolling window.
+
+This means a historical scenario (e.g. a traffic surge from 60 days ago) can appear in the timeline strip but produce no active insight card — intentionally. The timeline is a historical record; the insight panel is a current-state alert surface. Forcing old scenarios into the 30-day window to generate insight cards would blur that distinction and make the data feel artificially recent.
+
+If a future task wants insight narratives for older scenarios, the right lever is to widen the insight window as a product decision, or add a separate "historical narrative" surface — not to contort seed dates.
+
 ### Railway-first demo deployment path keeps the current SQLite setup intact
 
 Prepared the project for simple Railway deployment by relying on a persistent mounted volume for the SQLite database, automatic `prisma generate` during install, and a pre-deploy migration plus demo seed step.

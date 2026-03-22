@@ -2,9 +2,8 @@
 
 ## Near Term
 
-- implement **T16** — extend the seed and insights engine with additional scenarios
 - implement **T18** — controlling foundation (staff costs, rent, daily store cost layer) as the next data-model expansion
-- implement **T19** — tier insight narratives into active vs. historical context once the underlying scenario work is in place
+- implement **T19** — tier insight narratives into active vs. historical context (underlying scenario work complete with T16)
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
 - move font loading from CSS imports to `next/font`
 - introduce Playwright once login, redirects, and protected-route behavior are stable enough for end-to-end auth coverage
