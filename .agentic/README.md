@@ -10,6 +10,8 @@ It acts as a lightweight context cache for:
 - near-term backlog and open questions
 
 The goal is to keep durable project guidance close to the repository without mixing it into application code.
+For coding agents, this folder is the primary source of durable project context.
+The root `README.md` is the onboarding document for human developers and should not be treated as the main agent brief.
 
 ## Files
 

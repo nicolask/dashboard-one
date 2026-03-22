@@ -38,18 +38,19 @@ npm install
 cp .env.example .env
 npm run db:generate
 npm run db:migrate
+npm run db:seed-demo-data
 npm run auth:seed-demo
 npm run dev
 ```
 
 Danach ist die App lokal unter [http://localhost:3000](http://localhost:3000) erreichbar.
 
-## Standard-Logindaten
+## Login fuer die lokale Entwicklung
 
-Fuer die lokale Entwicklung sind aktuell folgende Demo-Zugangsdaten vorgesehen:
+Fuer die lokale Entwicklung wird der Demo-User ueber die Werte in der lokalen `.env` angelegt.
 
 - E-Mail: `demo@example.com`
-- Passwort: `ChangeMe123!`
+- Passwort: siehe `DEMO_LOGIN_PASSWORD` in der lokalen `.env`
 
 Die Werte kommen aus der lokalen `.env` bzw. `.env.example` und koennen bei Bedarf angepasst werden. Nach einer Aenderung der Demo-Credentials sollte `npm run auth:seed-demo` erneut ausgefuehrt werden.
 

@@ -16,13 +16,17 @@ Build a maintainable dashboard application with:
 
 ## Current Status
 
-The repository is intentionally at a very early stage.
+The repository is no longer just a scaffold.
 
 At the moment:
 
-- there is no application scaffold yet
-- architecture decisions are still being established
-- `.agentic/` is the source of evolving project context and planning
+- a Next.js App Router application exists under `src/app`
+- a local credentials login flow is implemented with a signed session cookie
+- protected app routes exist for dashboard, store detail, users, integrations, and settings
+- Prisma 7 is configured with SQLite, migrations, generated client output, and deterministic demo seed data
+- the dashboard already renders seeded retail BI data, KPI cards, charts, rankings, insights, and store drilldowns
+- lint, typecheck, and automated tests are part of the working baseline
+- `.agentic/` remains the primary source of evolving agent context and planning
 
 ## Agent Priorities
 
@@ -66,7 +70,8 @@ These are working assumptions, not rigid constraints.
 
 ## Documentation Layout
 
-Agent-oriented project context lives in `.agentic/`.
+Agent-oriented project context lives in `.agentic/` and should be treated as the primary durable source for coding agents.
+The root `README.md` is for human developer onboarding and local setup, not as the primary source of agent context.
 
 Use the files there as follows:
 
@@ -75,9 +80,14 @@ Use the files there as follows:
 - `.agentic/backlog.md`: upcoming work, open questions, and deferred ideas
 - `.agentic/notes.md`: temporary working notes that may later be folded into other docs
 
+## Implementation Notes
+
+- keep `AGENTS.md` short; durable detail and project-specific learnings belong in `.agentic/`
+- do not import client code from barrels that also re-export server-only modules; use leaf imports for shared types and utilities
+
 ## Change Discipline
 
-When the codebase is still small:
+Even while the codebase is still relatively small:
 
 - keep folders purposeful
 - prefer a small number of strong conventions
@@ -97,7 +107,6 @@ Use this rough sequence:
 
 1. Read this file.
 2. Read the relevant files in `.agentic/`.
-3. Inspect the current code before proposing structure changes.
+3. Inspect the current code before proposing structure changes or follow-up work.
 4. Make the smallest coherent change that advances the project.
 5. Record durable context updates in `.agentic/`.
-
