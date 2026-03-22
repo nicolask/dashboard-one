@@ -20,6 +20,12 @@ The root `README.md` is the onboarding document for human developers and should 
 - `backlog.md`: upcoming tasks, open questions, and deferred work
 - `notes.md`: temporary working notes and rough thoughts
 
+## Folders
+
+- `tasks/`: numbered task specs (`T{N}-<slug>.md`) ready for implementation by Codex
+- `po/`: PO staging area — feature ideas from external sources (ChatGPT outputs, stakeholder notes, etc.) that Claude processes into task specs before they become tasks; Codex does not read this folder
+- `notes/`: reference documents and working material (e.g. schema summaries for external LLM discussions)
+
 ## Maintenance Rules
 
 - prefer short updates over long narratives

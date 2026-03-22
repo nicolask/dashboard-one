@@ -14,6 +14,7 @@ When Nicolas describes a feature idea or improvement:
 2. Ask clarifying questions until scope, acceptance criteria, and edge cases are clear
 3. Write a structured task spec to `.agentic/tasks/T{N}-<slug>.md` following the format of existing task files
 4. Flag dependencies, risks, or conflicts with prior decisions before Codex starts
+5. If a related idea surfaces during scoping that doesn't fit the current task, propose adding it to `.agentic/backlog.md` and do so after confirmation
 
 Do not start writing code in this mode.
 

@@ -9,6 +9,10 @@
 
 ## Soon After
 
+- scenario timeline interactivity: clicking a scenario band on `ScenarioTimeline` currently navigates to the store drilldown; a richer alternative would highlight the corresponding `InsightPanel` card in-page (requires a Client Component with shared state or URL hash coordination) — deferred from T15
+
+
+- period comparison for category mix and top products: evaluate whether to show period-over-period delta for CategoryPerformanceList and TopProductsTable; requires extending the in-memory OrderItem aggregation path and deciding on placement (overview vs. store drilldown only); likely its own task
 - category-level insights: extend the insights engine to generate scenario-aware sentences for category performance (e.g. "Beauty showing above-average growth since Promo Week start") — requires OrderItem aggregation by category, separate from DailyStoreMetric path
 - document environment variables and local setup
 - document the migration path from Railway demo hosting on SQLite to PostgreSQL once multi-instance deployment matters
@@ -23,6 +27,12 @@
 
 ## Later
 
+- migrate from SQLite to PostgreSQL on Railway: change `provider` in schema, swap `PrismaBetterSqlite3` adapter for standard `PrismaClient`, remove `better-sqlite3`, re-run migrations against PG instance, re-seed — best done before T18 (new enums are cleaner on a fresh PG DB); Railway injects `DATABASE_URL` directly, Prisma handles the rest
+
+
+
+- mobile layout pass: dashboard is designed for desktop; investigate collapsing StoreBenchmarkRow reference lines (three per card → toggle or accordion), KPI grid stacking, and StoreRankingTable horizontal scroll on small screens — scope as a dedicated sprint once the core feature set stabilises
+- LLM-generated benchmark narrative: `StoreBenchmark` already carries `storeFormat`, `networkStoreCount`, `formatStoreCount`, `topQuartileStoreCount`, and all snapshot values — use these as a structured prompt payload to generate sentences like "Berlin Flagship liegt 12% über dem Durchschnitt der 8 Flagship-Stores, aber Conversion ist unterdurchschnittlich"; consider whether this extends InsightPanel or becomes a separate narrative block on the store detail page
 - add external system integration patterns
 - define caching and sync models
 - evaluate background job execution options
