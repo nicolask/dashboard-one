@@ -51,13 +51,6 @@
 - whether email uniqueness should stay application-normalized or move to a database-backed case-insensitive strategy when PostgreSQL is introduced
 - when to move from signed cookie sessions to database-backed sessions or Auth.js
 
-## Completed Recently
+## Completed
 
-- T20: Agentic Audit page at `/agentic` — LOC breakdown, time estimates, speedup comparison, and conditions/Einordnung; `snapshot-data.ts` as the single update point; three agentic KPI tiles replace the dev-status cards on the main dashboard; LOC snapshot SOP added to `.agentic/prompts/loc-snapshot.md`
-
-- T8: alert list work was superseded by the implemented `InsightPanel`, so the original collapsible `AlertPanel` task is no longer the active path
-- T10: store detail page and supporting store query layer are implemented
-- T11: placeholder routes for users, integrations, and settings are implemented
-- T12: explainable insights replaced the earlier alert-panel surface
-- T13: period comparison — dynamic `vs. previous Nd` labels on all KPI tiles, conversion delta in pp, revenue growth indicator per store in StoreRankingTable
-- T14: extended store benchmarking — `StoreBenchmarkRow` now shows three reference lines per KPI card (network avg, format avg, top 25%); `StoreBenchmark` type extended with `formatAverage`, `topQuartile`, and store-count fields
+See `.agentic/completed.md`.

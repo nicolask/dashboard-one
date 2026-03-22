@@ -45,6 +45,7 @@ Agents should:
 - read `.agentic/project-context.md` before making significant architecture changes
 - update `.agentic/decisions.md` when a notable technical decision is made
 - update `.agentic/backlog.md` when new follow-up work becomes clear
+- update `.agentic/completed.md` when a task is finished and should move out of active context
 - keep task-level context together: task specs live in `.agentic/tasks/T{N}-<slug>.md`, review follow-ups in `.agentic/tasks/T{N}-review.md`
 - when committing completed task work, include the relevant code changes plus the associated task file, review file, and any touched `.agentic/` context updates
 - keep documentation concise and current rather than exhaustive
@@ -80,6 +81,7 @@ Use the files there as follows:
 - `.agentic/project-context.md`: current understanding of goals, constraints, and architectural direction
 - `.agentic/decisions.md`: short ADR-style notes for important choices
 - `.agentic/backlog.md`: upcoming work, open questions, and deferred ideas
+- `.agentic/completed.md`: completed task log kept separate from the active backlog to reduce context noise
 - `.agentic/notes.md`: temporary working notes that may later be folded into other docs
 
 ## Implementation Notes
