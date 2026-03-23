@@ -1,232 +1,179 @@
-# Scaffold issues for Codex
+# Codex Issues Triage
 
-Issues identified during architectural review on 2026-03-21. Fix in order of priority.
+This file is no longer a raw scaffold-era review log.
 
-Reviewer note on follow-up status:
+It is a triaged handoff for the Claude PO so the remaining points can be handled
+appropriately:
 
-- not every item in this file was fixed immediately
-- several non-blocking items were intentionally moved into `.agentic/backlog.md` for later clean-context follow-up
-- treat this file as review input, not as the single source of truth for what remains open
+- product decisions that need explicit prioritization
+- engineering chores that can be folded into nearby work
+- historical findings that are already resolved and should not be resurfaced as
+  active work
 
----
-
-## High priority
-
-### 1. `(app)` route group is missing `layout.tsx`
-
-There is no `src/app/(app)/layout.tsx`. This is the correct place for an auth guard — a single layout that protects every future route under `(app)/`. Without it, `/dashboard` is reachable without authentication, and there is no seam to add a session check without touching every page individually.
-
-**Fix:** Create `src/app/(app)/layout.tsx`. For now it can just render children, but add a comment marking it as the auth guard location.
-
-**Status: resolved in commit on 2026-03-21.**
+The goal is to prevent old review notes from being mistaken for the current
+source of truth.
 
 ---
 
-### 2. `cn()` is missing `tailwind-merge`
+## What the PO should look at
 
-`src/lib/utils/cn.ts` filters falsy values and joins strings. It does not merge conflicting Tailwind utilities. `cn("p-4", "p-8")` produces `"p-4 p-8"` — both classes are present in the DOM and the result is browser-order-dependent. This will produce subtle visual bugs as soon as components accept `className` override props.
+Only a small part of the original review still needs explicit product
+prioritization.
 
-**Fix:** Replace the implementation with `clsx` + `tailwind-merge`:
+### 1. Root route behavior (`/`)
 
-```ts
-import { clsx, type ClassValue } from "clsx";
-import { twMerge } from "tailwind-merge";
+Current state:
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-```
+- [`src/app/page.tsx`](/Users/nicolas/work/dev/agentic/dashboard-one/src/app/page.tsx)
+  is still a scaffold-style landing page
+- it links to `/login` and `/dashboard`
+- this is not wrong, but it is a product choice that should now be made
+  intentionally
 
-Add `clsx` and `tailwind-merge` to dependencies.
+Why this needs PO input:
 
-**Status: moved to backlog for a focused UI utility pass.**
+- it affects first impression and navigation model
+- it changes whether the app presents itself as a product, a demo, or a dev
+  scaffold
+- it should align with how we want to evaluate the project going forward
 
----
+Decision options:
 
-### 3. Fonts are loaded via CSS, not `next/font`
+- keep `/` as an intentional landing page
+- redirect `/` to `/login`
+- redirect `/` to `/dashboard` when authenticated and `/login` otherwise
 
-`globals.css` imports Inter and JetBrains Mono via a CSS `@import`. This bypasses Next.js font optimization: no subsetting, no preloading, and layout shift on load.
+Recommendation:
 
-**Fix:** Load fonts in `src/app/layout.tsx` using `next/font/google` (Inter) and `next/font/local` (JetBrains Mono with a self-hosted woff2). Expose them as CSS variables and reference those variables in the Tailwind design tokens in `globals.css`.
+- treat this as a small product decision, not as an infra chore
+- if no stronger product need exists, prefer the auth-aware redirect path once
+  the app is meant to feel less scaffold-like
 
-**Status: moved to backlog for a dedicated font-loading pass.**
+Status:
 
----
-
-### 4. `DashboardFrame` makes a redundant `getCurrentUser()` DB call on every page load
-
-`(app)/layout.tsx` calls `requireCurrentUser()`, which hits the DB. Then `DashboardFrame` independently calls `getCurrentUser()` — a second hit on the same request. These are not deduplicated automatically.
-
-**Fix:** Wrap `getCurrentUser` with `React.cache()` so repeated calls within the same request share the result:
-
-```ts
-// src/lib/auth/current-user.ts
-import { cache } from "react";
-
-export const getCurrentUser = cache(async function getCurrentUser() { ... });
-```
-
-No call-site changes needed.
-
-**Status: resolved in commit on 2026-03-21.**
+- open
+- should stay visible for PO prioritization
 
 ---
 
-### 5. `prisma.ts` uses a brittle relative import for the generated client
+## Can be done opportunistically
 
-```ts
-import { PrismaClient } from "../../../generated/prisma/client";
-```
+These items are still valid, but they do not need standalone PO-level task
+splitting unless they happen to fit nearby work.
 
-The `@generated/*` path alias is already configured in `tsconfig.json`. The relative path is fragile if `prisma.ts` ever moves.
+### 2. Move fonts to `next/font`
 
-**Fix:** Use the configured alias:
+Current state:
 
-```ts
-import { PrismaClient } from "@generated/prisma/client";
-```
+- [`src/app/layout.tsx`](/Users/nicolas/work/dev/agentic/dashboard-one/src/app/layout.tsx)
+  does not yet use `next/font`
+- [`src/app/globals.css`](/Users/nicolas/work/dev/agentic/dashboard-one/src/app/globals.css)
+  still defines font tokens directly
 
-**Status: resolved on 2026-03-21 after confirming the alias works in the script runtime.**
+Why it matters:
 
----
+- improves font loading behavior and aligns better with Next.js conventions
+- reduces the "early scaffold" feel in the app shell
 
-### 6. `generated/` is not in `.gitignore`
+Why this is not a PO priority:
 
-The Prisma schema outputs the generated client to `generated/prisma/` at the project root. This directory is not gitignored, so it will be committed. If this is intentional (for CI without a generate step), document the decision. If not, add `generated/` to `.gitignore` and add `prisma generate` to the build/CI step.
+- it does not change product scope
+- it is a contained implementation chore
+- best handled during a UI polish or shell cleanup pass
 
-**Status: already resolved before this review pass. `/generated/prisma` is gitignored.**
+Recommendation:
 
----
+- keep this in backlog / engineering cleanup
+- do it alongside other app-shell polish, not as a dedicated roadmap item
 
-## Medium priority
+Status:
 
-### 7. Status comparisons use string literals instead of the generated enum
+- still open
 
-In `actions.ts` and `current-user.ts`:
+### 3. Add `next/navigation` test mocks when router hooks appear
 
-```ts
-user.status !== "ACTIVE"     // actions.ts
-where: { status: "ACTIVE" }  // current-user.ts
-```
+Current state:
 
-The generated client exports `UserStatus`. Using the enum value makes refactoring safe and is self-documenting:
+- [`vitest.setup.ts`](/Users/nicolas/work/dev/agentic/dashboard-one/vitest.setup.ts)
+  mocks `next/link`, but not `next/navigation`
+- this is only a problem once components start using `useRouter()` or
+  `usePathname()`
 
-```ts
-import { UserStatus } from "@generated/prisma/client";
+Why it matters:
 
-user.status !== UserStatus.ACTIVE
-```
+- avoids test friction once router-aware client components land
 
-**Status: resolved on 2026-03-21.**
+Why this is not a PO priority:
 
----
+- it is pure test plumbing
+- it should be added at the moment the first affected component is introduced
 
-### 8. `getCurrentUser` uses `findFirst` on a primary key
+Recommendation:
 
-```ts
-prisma.user.findFirst({ where: { id: userId, status: "ACTIVE" } })
-```
+- do not create a standalone PO task now
+- treat it as a just-in-time testing chore
 
-`findFirst` on a compound filter does not use the PK index as efficiently as `findUnique`. The idiomatic pattern is:
+Status:
 
-```ts
-const user = await prisma.user.findUnique({ where: { id: userId } });
-if (!user || user.status !== UserStatus.ACTIVE) return null;
-return user;
-```
-
-**Status: resolved on 2026-03-21.**
+- open, but intentionally deferred
 
 ---
 
-### 9. `datasource db` in `schema.prisma` has no `url` field
+## Do not resurface as active work
 
-```prisma
-datasource db {
-  provider = "sqlite"
-}
-```
+These items came from the original early review, but should not be presented to
+the PO as current open issues.
 
-The URL is delegated entirely to `prisma.config.ts`. This works for Prisma 7's config-first setup, but the schema is non-standard — developers unfamiliar with `prisma.config.ts` will be confused, and some IDE plugins and schema validators may reject it.
+### Already resolved
 
-**Fix:** Add a comment in the schema explaining the delegation, or use the conventional `url = env("DATABASE_URL")` and let `prisma.config.ts` override it.
+- `(app)` route group layout / auth seam
+- duplicate current-user DB read
+- Prisma generated client import path
+- generated Prisma output in `.gitignore`
+- enum usage for `UserStatus`
+- `findUnique` vs `findFirst` auth lookup issue
+- Prisma schema comment for config-first datasource URL
+- `.env.example`
+- duplicated email rendering in user widget
+- session revocation limitation documented in decisions
+- explicit scrypt parameters
 
-**Status: resolved on 2026-03-21 with an inline schema comment.**
+### No longer accurate as written
 
----
+- the old `cn()` finding is stale:
+  [`src/lib/utils/cn.ts`](/Users/nicolas/work/dev/agentic/dashboard-one/src/lib/utils/cn.ts)
+  already uses `clsx` plus `tailwind-merge`
+- the old font note referenced CSS `@import`; that exact wording is no longer
+  the right description of the current state, even though the broader
+  `next/font` follow-up still exists
 
-### 10. No `.env.example` file
+Implication:
 
-The change introduces two required env vars (`DATABASE_URL`, `AUTH_SECRET`) and optional seeding vars (`DEMO_LOGIN_EMAIL`, `DEMO_LOGIN_PASSWORD`). There is no `.env.example` documenting them. Any new developer or agent who clones this will hit a runtime error with no obvious path forward.
-
-**Fix:** Add `.env.example` with placeholder values and a comment for each variable.
-
-**Status: already resolved before this review pass.**
-
----
-
-## Low priority
-
-### 11. User widget in `DashboardFrame` shows email twice when `displayName` is null
-
-```tsx
-<p className="font-medium text-ink-900">
-  {user?.displayName ?? user?.email ?? "Signed in"}
-</p>
-<p>{user?.email}</p>  {/* always rendered */}
-```
-
-When `displayName` is null, both lines render the email address. The second line should only appear when it adds information:
-
-```tsx
-{user?.displayName && <p>{user.email}</p>}
-```
-
-**Status: resolved on 2026-03-21.**
+- these points should not be split into new PO tasks
+- if needed, they belong in history, not in active prioritization
 
 ---
 
-### 12. Session JWT has no revocation mechanism — document the known gap
+## Suggested PO handling
 
-A disabled user's JWT is valid until expiry (7 days). The current `requireCurrentUser()` flow re-checks `status: "ACTIVE"` in the DB via the `(app)` layout on every request, which mitigates this. But the guarantee only holds for pages that go through that layout. Future Server Actions or API routes that skip the layout will need their own status check or they will silently accept disabled sessions.
+If Claude is using this file to decide what to do next, the intended behavior
+is:
 
-**Fix:** Add a note to `decisions.md` describing this gap and the expected mitigation pattern, before more Server Actions are added.
-
-**Status: resolved on 2026-03-21 in `.agentic/decisions.md`.**
-
----
-
-### 13. Scrypt cost parameters use Node.js defaults without documentation
-
-`scryptSync(password, salt, 64)` uses Node's defaults (N=16384, r=8, p=1). These are reasonable but invisible. Future changes to the hashing logic may inadvertently alter them.
-
-**Fix:** Pass cost parameters explicitly and add a comment documenting the chosen values and the rationale.
-
-**Status: resolved on 2026-03-21.**
+1. Keep only the root-route decision as a real product-priority question.
+2. Fold the font migration into a nearby UI polish / shell cleanup task.
+3. Leave the `next/navigation` mock as a just-in-time engineering follow-up.
+4. Ignore the already-resolved scaffold findings when planning next work.
 
 ---
 
-### 14. `next/navigation` is not mocked in vitest setup
+## Notes
 
-`vitest.setup.ts` mocks `next/link` but not `next/navigation`. Any component that calls `usePathname()` or `useRouter()` (e.g. for active nav state in `DashboardFrame`) will throw in tests.
+This file intentionally does not duplicate the full backlog.
 
-**Fix:** Add to `vitest.setup.ts`:
+For active roadmap planning, check:
 
-```ts
-vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn(), replace: vi.fn() }),
-  usePathname: () => "/",
-}));
-```
+- [`/Users/nicolas/work/dev/agentic/dashboard-one/.agentic/backlog.md`](/Users/nicolas/work/dev/agentic/dashboard-one/.agentic/backlog.md)
+- [`/Users/nicolas/work/dev/agentic/dashboard-one/.agentic/completed.md`](/Users/nicolas/work/dev/agentic/dashboard-one/.agentic/completed.md)
+- [`/Users/nicolas/work/dev/agentic/dashboard-one/.agentic/decisions.md`](/Users/nicolas/work/dev/agentic/dashboard-one/.agentic/decisions.md)
 
-**Status: kept in backlog for when router hooks actually land in components.**
-
----
-
-### 15. Root `src/app/page.tsx` is a developer scaffold page
-
-The home route renders a "what's included" overview. This should be replaced with a redirect to `/login` or `/dashboard` before any real usage.
-
-**Fix:** Replace with a redirect or a real landing page when appropriate. Track in backlog.
-
-**Status: tracked as an open product decision in backlog/open questions.**
+This document is only a cleanup layer over an old Codex review artifact.
