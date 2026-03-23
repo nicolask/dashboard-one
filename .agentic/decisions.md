@@ -112,6 +112,18 @@ For Railway specifically, the deploy flow is cleaner when migration runs in pre-
 
 ## 2026-03-23
 
+### `/` redirects to `/login`; login page doubles as product landing
+
+The scaffold-era root page is retired. `/` now redirects to `/login`. The login page is
+restructured as a two-column layout: intro content on the left (project description, capability
+list, compressed agentic teaser), login form on the right.
+
+The intent is that login remains the functional core and entry point. The intro content exists
+so the page reads as a product demo rather than a developer scaffold — without exposing any
+dashboard data before authentication.
+
+
+
 ### Forecast engine uses a strategy pattern with a per-store model registry
 
 The forecast engine (T23b) resolves the active prediction algorithm at runtime

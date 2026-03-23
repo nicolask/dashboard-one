@@ -2,6 +2,13 @@
 
 ## Near Term
 
+### T24 — Login as landing page with intro content
+
+`/` redirects to `/login`. The login page gets a two-column layout: contextual intro on the left
+(project description, capability list, compressed agentic teaser from `snapshot-data.ts`), login
+form on the right. Scaffold copy and "Back to overview" link removed from `LoginForm`.
+See `.agentic/tasks/T24-login-landing-intro.md`.
+
 ### Forecast engine (T22 → T23a → T23b → T23c)
 
 - **T22** — Store settings surface: `Store.state` (Bundesland), `StoreForecastConfig` (per-store model slug + enabled flag), settings UI at `/settings`, PATCH API route
@@ -59,7 +66,6 @@ Follow-on (after T23c):
 ## Open Questions
 
 - how soon background processing will be needed for integration syncs
-- whether a root landing page should remain or redirect once auth becomes real
 - whether email uniqueness should stay application-normalized or move to a database-backed case-insensitive strategy when PostgreSQL is introduced
 - when to move from signed cookie sessions to database-backed sessions or Auth.js
 
