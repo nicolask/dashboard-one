@@ -88,6 +88,12 @@ Current framing for this repository:
   impact: a sandbox-only Turbopack failure can look like an application regression even when the code is fine, which wastes time unless the environment constraint is recognized quickly
   follow-up: if `next build` fails with this specific Turbopack sandbox error, rerun the build with escalated permissions before treating it as a code issue
 
+- date: 2026-03-23
+  situation: wrapping up a planning-heavy session with Claude in the PO role and considering whether to clear context
+  observation: asking explicitly before `clear` whether there is anything worth remembering can surface missing durable context that was never written down, but it can also encourage the model to memorialize more than is actually useful. The behavior seems more relevant in PO / planning conversations than in coding turns, where concrete work is usually already captured in files or commits.
+  impact: a short "anything to retain before clear?" check can improve handoff quality in planning sessions, but used routinely it may create memory bloat and turn ephemeral discussion into pseudo-durable guidance
+  follow-up: use this prompt selectively at the end of PO or roadmap discussions, not as a blanket ritual after every session; prefer writing durable context into `.agentic/` files first and only memorizing what would otherwise be lost
+
 ## Review Follow-Ups
 
 Notes captured from review feedback on 2026-03-21:
