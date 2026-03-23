@@ -1,131 +1,231 @@
 # Schema & Seed Reference — Retail BI Demo
 
-*Use this document as context when discussing schema extensions with an LLM.*
+*Use this document as lightweight context when discussing schema changes, seed
+extensions, or new BI features with an LLM.*
 
 ---
 
 ## Project summary
 
-A retail BI dashboard demo built with Next.js 15, Prisma 7 (SQLite), and Tailwind.
-It simulates a German multi-format retail chain with 8 stores across 6 categories.
-All data is deterministically seeded — no live integrations. The seed runs once;
-the app reads from the resulting SQLite database via server-side Prisma queries.
+A retail BI dashboard demo built with Next.js 16, Prisma 7 on SQLite, and
+Tailwind CSS.
 
-Current capabilities: KPI cards (revenue, orders, basket, conversion), time-series
-chart, store ranking, category performance, top products, store benchmarking, and an
-insight panel that generates rule-based text from scenario data.
+The app combines:
+
+- a local credentials login backed by a `User` table
+- a protected dashboard shell
+- seeded retail BI data for overview and store-detail pages
+- a controlling layer for cost, profit, and staff-productivity KPIs
+
+All business data is deterministically seeded. There are no live integrations in
+the current implementation.
+
+Current implemented UI capabilities include:
+
+- KPI cards for revenue, orders, basket, conversion, profit, cost ratio, and
+  revenue per staff hour
+- revenue timeseries chart
+- store ranking, category performance, and top products
+- store benchmark comparison
+- explainable insight narratives
+- scenario timeline
 
 ---
 
 ## Current Prisma schema
 
+### `User`
+Used for local auth only.
+
+```
+id              cuid (PK)
+email           String (unique)
+displayName     String?
+passwordHash    String?
+emailVerifiedAt DateTime?
+lastLoginAt     DateTime?
+status          UserStatus       — ACTIVE | DISABLED
+createdAt       DateTime
+updatedAt       DateTime
+```
+
 ### `Store`
+Retail locations used across all BI views.
+
 ```
 id          cuid (PK)
 code        String (unique)   — e.g. "BER-01"
-name        String            — e.g. "Berlin Mitte"
+name        String
 city        String
-region      String            — "Nord" | "Süd" | "Ost" | "West"
+region      String            — business region: "Nord" | "Süd" | "Ost" | "West"
 format      StoreFormat       — flagship | mall | urban | suburban
 sizeBand    SizeBand          — small | medium | large
 openedAt    DateTime
 isActive    Boolean
+createdAt   DateTime
+updatedAt   DateTime
 ```
 
+Relations:
+
+- `orders`
+- `dailyMetrics`
+- `dailyTraffic`
+- `employees`
+- `dailyStoreCosts`
+
 ### `Category`
+
 ```
 id          cuid (PK)
-slug        String (unique)   — electronics | home | fashion | beauty | sports | grocery
+slug        String (unique)
 name        String
-parentId    String? (self-ref) — tree structure, not yet used in seed
+parentId    String?            — self-reference, tree-capable
 sortOrder   Int
+createdAt   DateTime
 ```
 
 ### `Product`
+
 ```
 id              cuid (PK)
-sku             String (unique)   — e.g. "ELECTRONICS-001"
+sku             String (unique)
 name            String
 categoryId      FK → Category
-brand           String?           — not seeded, placeholder
-basePrice       Float             — list price
-baseCost        Float             — COGS per unit (derived from marginBand: low=28%, med=42%, high=55% of price)
-marginBand      MarginBand        — low | medium | high
-popularityScore Float (0–1)       — drives weighted random order item selection
+brand           String?
+basePrice       Float
+baseCost        Float
+marginBand      MarginBand     — low | medium | high
+popularityScore Float          — 0..1, drives weighted sampling
 isPromoEligible Boolean
 isActive        Boolean
+createdAt       DateTime
 ```
 
 ### `Order`
+
 ```
-id              cuid (PK)
-orderNumber     String (unique)   — "{storeCode}-{YYYYMMDD}-{0001}"
-storeId         FK → Store
-orderedAt       DateTime
-customerType    CustomerType      — new | returning
-channel         Channel           — in_store | click_collect | online
-itemCount       Int
-subtotalAmount  Float
-discountAmount  Float
-taxAmount       Float             — 19% of subtotal
-totalAmount     Float
-paymentMethod   String?           — not seeded
-status          OrderStatus       — completed | cancelled | returned_partial | returned_full
+id             cuid (PK)
+orderNumber    String (unique)   — "{storeCode}-{YYYYMMDD}-{0000}"
+storeId        FK → Store
+orderedAt      DateTime
+customerType   CustomerType      — new | returning
+channel        Channel           — in_store | click_collect | online
+itemCount      Int
+subtotalAmount Float
+discountAmount Float
+taxAmount      Float
+totalAmount    Float
+paymentMethod  String?
+status         OrderStatus       — completed | cancelled | returned_partial | returned_full
+createdAt      DateTime
 
 indexes: [storeId, orderedAt], [orderedAt]
 ```
 
 ### `OrderItem`
+
 ```
-id              cuid (PK)
-orderId         FK → Order
-productId       FK → Product
-quantity        Int
-unitPrice       Float             — basePrice ± 4% noise
-unitCost        Float             — product.baseCost (no noise)
-discountAmount  Float             — 20% chance of 10% line discount
-lineRevenue     Float             — quantity × unitPrice − discount
-lineMargin      Float             — lineRevenue − quantity × unitCost
+id             cuid (PK)
+orderId        FK → Order
+productId      FK → Product
+quantity       Int
+unitPrice      Float
+unitCost       Float
+discountAmount Float
+lineRevenue    Float
+lineMargin     Float
 
 indexes: [orderId], [productId]
 ```
 
 ### `DailyStoreMetric`
-The core pre-aggregated table — all dashboard KPIs read from here.
+Main pre-aggregated daily fact table for commercial KPIs.
+
 ```
 id               cuid (PK)
 date             DateTime
 storeId          FK → Store
-revenue          Float             — net revenue after discounts
+revenue          Float
 orders           Int
 itemsSold        Int
-avgBasketValue   Float             — revenue / orders
+avgBasketValue   Float
 avgItemsPerOrder Float
 visitors         Int
-conversionRate   Float             — orders / visitors
-discountRate     Float             — discountAmount / subtotal
+conversionRate   Float
+discountRate     Float
 returnRate       Float
-marginAmount     Float             — revenue × marginRate
-marginRate       Float             — random 0.28–0.46 per day (not derived from OrderItem)
-scenarioSlug     String?           — which scenario was active on this day, if any
+marginAmount     Float
+marginRate       Float
+scenarioSlug     String?
+createdAt        DateTime
 
 unique: [date, storeId]
 indexes: [storeId, date], [date]
 ```
 
 ### `DailyTraffic`
-Separate traffic funnel table (seeded stub, not yet used in UI).
+Secondary daily funnel table. Seeded and available, but not yet a primary UI
+surface.
+
 ```
-id              cuid (PK)
-date            DateTime
-storeId         FK → Store
-visitors        Int
-sessions        Int
-addToCartCount  Int
-checkoutCount   Int
-purchaseCount   Int
+id             cuid (PK)
+date           DateTime
+storeId        FK → Store
+visitors       Int
+sessions       Int
+addToCartCount Int
+checkoutCount  Int
+purchaseCount  Int
+createdAt      DateTime
 
 unique: [date, storeId]
+indexes: [storeId, date]
+```
+
+### `Employee`
+Store-level employee master data for the controlling layer.
+
+```
+id           cuid (PK)
+storeId      FK → Store
+role         EmployeeRole      — sales | manager | cashier | stock
+contractType ContractType      — full_time | part_time | minijob
+weeklyHours  Float
+hourlyWage   Float
+isActive     Boolean
+```
+
+### `EmployeeWorkLog`
+Daily staff effort facts.
+
+```
+id          cuid (PK)
+employeeId  FK → Employee
+date        DateTime
+hoursWorked Float
+
+unique: [employeeId, date]
+indexes: [employeeId, date], [date]
+```
+
+### `DailyStoreCost`
+Daily pre-aggregated operating-cost fact table aligned to `DailyStoreMetric`.
+
+```
+id            cuid (PK)
+date          DateTime
+storeId       FK → Store
+staffCost     Float
+rentCost      Float
+otherCost     Float
+totalCost     Float
+staffHours    Float
+employeeCount Int
+scenarioSlug  String?
+
+unique: [date, storeId]
+indexes: [storeId, date], [date]
 ```
 
 ---
@@ -133,118 +233,214 @@ unique: [date, storeId]
 ## Seed generator structure
 
 ### Store catalog — 8 stores
-Each store definition carries base parameters that drive metric simulation:
 
-| Code   | Name                    | City       | Region | Format   | Size   | Traffic/day | Conversion | Basket |
-|--------|-------------------------|------------|--------|----------|--------|-------------|------------|--------|
-| BER-01 | Berlin Mitte            | Berlin     | Ost    | flagship | large  | 1800        | 4.5%       | €87    |
-| HAM-01 | Hamburg Altona          | Hamburg    | Nord   | mall     | large  | 1400        | 5.2%       | €74    |
-| MUC-01 | München Maxvorstadt     | München    | Süd    | urban    | medium | 1100        | 4.1%       | €95    |
-| LEI-01 | Leipzig Gohlis          | Leipzig    | Ost    | suburban | medium | 700         | 3.8%       | €68    |
-| KOE-01 | Köln Ehrenfeld          | Köln       | West   | urban    | medium | 950         | 4.4%       | €79    |
-| STU-01 | Stuttgart Mitte         | Stuttgart  | Süd    | mall     | small  | 620         | 3.9%       | €72    |
-| DUS-01 | Düsseldorf Flingern     | Düsseldorf | West   | urban    | small  | 580         | 3.6%       | €81    |
-| NUE-01 | Nürnberg Gostenhof      | Nürnberg   | Süd    | suburban | small  | 480         | 3.3%       | €65    |
+The seed simulates 8 stores across Germany.
 
-Each store also has a `categoryBias` map that skews order item category selection
-(e.g. Berlin overweights electronics 1.4×, Hamburg overweights beauty 1.4×).
+| Code   | Name                | City       | Region | Format   | Size   | Traffic/day | Conversion | Basket |
+|--------|---------------------|------------|--------|----------|--------|-------------|------------|--------|
+| BER-01 | Berlin Mitte        | Berlin     | Ost    | flagship | large  | 1800        | 4.5%       | €87    |
+| HAM-01 | Hamburg Altona      | Hamburg    | Nord   | mall     | large  | 1400        | 5.2%       | €74    |
+| MUC-01 | München Maxvorstadt | München    | Süd    | urban    | medium | 1100        | 4.1%       | €95    |
+| LEI-01 | Leipzig Gohlis      | Leipzig    | Ost    | suburban | medium | 700         | 3.8%       | €68    |
+| KOE-01 | Köln Ehrenfeld      | Köln       | West   | urban    | medium | 950         | 4.4%       | €79    |
+| STU-01 | Stuttgart Mitte     | Stuttgart  | Süd    | mall     | small  | 620         | 3.9%       | €72    |
+| DUS-01 | Düsseldorf Flingern | Düsseldorf | West   | urban    | small  | 580         | 3.6%       | €81    |
+| NUE-01 | Nürnberg Gostenhof  | Nürnberg   | Süd    | suburban | small  | 480         | 3.3%       | €65    |
+
+Each store also carries a `categoryBias` map that skews category demand
+sampling.
 
 ### Category catalog — 6 categories
-Each category carries simulation parameters:
 
-| Slug        | Price range | Avg qty/item | Margin band | Demand base | Promo sensitivity |
-|-------------|-------------|--------------|-------------|-------------|-------------------|
-| electronics | €49–899     | 1.1          | low (28%)   | 0.7         | 0.8               |
-| home        | €12–249     | 1.8          | medium (42%)| 0.9         | 1.1               |
-| fashion     | €19–199     | 2.0          | high (55%)  | 0.85        | 1.4               |
-| beauty      | €8–89       | 2.3          | high (55%)  | 1.0         | 1.2               |
-| sports      | €24–349     | 1.4          | medium (42%)| 0.75        | 1.0               |
-| grocery     | €2–38       | 4.5          | low (28%)   | 1.2         | 0.9               |
+| Slug        | Name             | Price range | Avg qty/item | Margin band | Demand base | Promo sensitivity |
+|-------------|------------------|-------------|--------------|-------------|-------------|-------------------|
+| electronics | Electronics      | €49–899     | 1.1          | low         | 0.7         | 0.8               |
+| home        | Home & Living    | €12–249     | 1.8          | medium      | 0.9         | 1.1               |
+| fashion     | Fashion          | €19–199     | 2.0          | high        | 0.85        | 1.4               |
+| beauty      | Beauty & Care    | €8–89       | 2.3          | high        | 1.0         | 1.2               |
+| sports      | Sports & Outdoor | €24–349     | 1.4          | medium      | 0.75        | 1.0               |
+| grocery     | Grocery & Food   | €2–38       | 4.5          | low         | 1.2         | 0.9               |
 
-13 named products per category (78 total SKUs).
+There are 13 named products per category, for 78 SKUs in total.
 
-### Metric simulation — per store per day (120 days)
+### History window
 
-Daily metrics are generated with deterministic seeded randomness (`rand-seed`):
+- `DAYS_HISTORY = 120`
+- `getHistoryDates()` produces 121 daily dates including today
 
-```
-visitors    = trafficBase × weekdayFactor × dailyNoise(±7%) × trafficMultiplier(scenario)
-convRate    = conversionBase × noise(±5%) × conversionMultiplier(scenario), clamped 1–15%
-orders      = visitors × convRate
-basket      = basketBase × noise(±6%) × basketMultiplier(scenario)
-subtotal    = basket × orders
-discountRate = 5% base + scenario boost + noise(±1.5%), clamped 0–25%
-revenue     = subtotal × (1 − discountRate)
-marginRate  = random 0.28–0.46 per day
-marginAmount = revenue × marginRate
-```
+This means all daily fact tables, work logs, and scenario overlays span the same
+rolling history window.
 
-Weekday factors: Mon 0.78, Tue 0.80, Wed 0.88, Thu 0.95, Fri 1.00, Sat 1.18, Sun 0.85.
+### Daily KPI simulation
 
-**Note:** `marginRate` in `DailyStoreMetric` is a random daily draw, not derived from
-`OrderItem.unitCost`. The two are independent — `OrderItem` carries the ground-truth
-COGS, while `DailyStoreMetric.marginRate` is a pre-aggregated approximation.
+For each store-day:
 
-### Order sampling (15% of days)
-
-Not all days have `Order` records. 15% of store-days are sampled for order detail:
-- 1–4 items per order, category weighted by store bias, products weighted by popularity
-- `unitPrice` = `basePrice ± 4%`, `unitCost` = exact `baseCost`
-- 20% chance of 10% line discount per item
-- `customerType`: 38% new, 62% returning
-- `channel`: 82% in-store, ~9% click & collect, ~9% online
-
-### Scenario system
-
-Scenarios are defined as a static array in the seed. Each entry applies multipliers
-to a store's daily metrics for a date range. The `scenarioSlug` is written to every
-`DailyStoreMetric` row where a scenario was active.
-
-Current implemented scenarios (`T15` will surface them in the UI; `T16` will add more):
-
-```
-promo_week       global (all stores)    30 days ago, 7 days
-                 trafficMultiplier: 1.35, conversionMultiplier: 1.2,
-                 basketMultiplier: 0.93, discountRateBoost: +6%
-
-store_slump      LEI-01 only            14 days ago, 12 days
-                 conversionMultiplier: 0.62, basketMultiplier: 0.95,
-                 returnRateBoost: +3%
+```text
+visitors        = trafficBase × weekdayFactor × dailyNoise × scenario traffic multiplier
+conversionRate  = conversionBase × noise × scenario conversion multiplier
+orders          = visitors × conversionRate
+basket          = basketBase × noise × scenario basket multiplier
+subtotal        = basket × orders
+discountRate    = 5% base + scenario boost + noise
+revenue         = subtotal − discount
+marginRate      = random daily draw between 28% and 46%
+marginAmount    = revenue × marginRate
+returnRate      = base return rate + scenario boost + noise
 ```
 
-A scenario can optionally carry `storeCode` (store-specific) and `categorySlug`
-(metadata only — not yet wired into the metric simulation per category).
+Weekday factors:
+
+- Mon 0.78
+- Tue 0.80
+- Wed 0.88
+- Thu 0.95
+- Fri 1.00
+- Sat 1.18
+- Sun 0.85
+
+### Order sampling
+
+Only 15% of store-days get detailed transactional orders (`ORDER_SAMPLE_RATE =
+0.15`).
+
+Purpose:
+
+- enough realistic transaction detail for product/category drilldowns
+- keep the seed smaller than a full transaction-level history for every day
+
+### Employee and cost seeding
+
+The controlling layer is seeded in three stages:
+
+1. `seedEmployees()`
+   Creates employees per store based on format/size headcount assumptions.
+2. `seedWorkLogs()`
+   Creates one daily work-log row per employee across the history window.
+3. `seedDailyStoreCosts()`
+   Aggregates work logs into daily store cost rows.
+
+Seed assumptions currently include:
+
+- role mix by store
+- role-specific hourly wages
+- contract-hour profiles (`full_time`, `part_time`, `minijob`)
+- fixed rent cost by store size band
+- lightly randomized "other cost" on top of rent
+
+The result is a second pre-aggregated daily fact table, parallel to
+`DailyStoreMetric`.
 
 ---
 
-## What already exists for cost/margin
+## Scenario system
 
-The following cost-related data is already in the schema and seed:
+Scenarios are defined as a static array in `prisma/seed.ts`. A matching
+`scenarioSlug` is written into both `DailyStoreMetric` and `DailyStoreCost` when
+the scenario is active.
 
-- `Product.baseCost` — unit COGS per SKU, derived from `marginBand`
-- `Product.basePrice` — list price
-- `OrderItem.unitCost` — ground-truth COGS per line (= `baseCost`, no noise)
-- `OrderItem.lineMargin` — `lineRevenue − quantity × unitCost`
-- `DailyStoreMetric.marginAmount` — pre-aggregated gross margin in €
-- `DailyStoreMetric.marginRate` — pre-aggregated gross margin % (random, not derived)
+Current seeded scenarios:
 
-**What is not modelled at all:**
-- Staff / personnel costs (headcount, wages, FTE by store)
-- Store fixed costs (rent, utilities, depreciation)
-- Purchasing overhead / logistics costs
-- Cost centre structure (direct vs. indirect)
-- P&L aggregation beyond gross margin
+### `promo_week`
+
+- scope: all stores
+- starts: 30 days ago
+- duration: 7 days
+- effects:
+  - traffic multiplier `1.35`
+  - conversion multiplier `1.2`
+  - basket multiplier `0.93`
+  - discount-rate boost `+6%`
+
+### `traffic_surge`
+
+- scope: `HAM-01`
+- starts: 60 days ago
+- duration: 8 days
+- effects:
+  - traffic multiplier `1.45`
+  - conversion multiplier `0.81`
+  - basket multiplier `0.91`
+
+### `competitor_opening`
+
+- scope: `MUC-01`
+- starts: 52 days ago
+- duration: 30 days
+- effects:
+  - traffic multiplier `0.79`
+  - conversion multiplier `0.87`
+  - basket multiplier `0.97`
+
+### `store_slump`
+
+- scope: `LEI-01`
+- starts: 14 days ago
+- duration: 12 days
+- effects:
+  - conversion multiplier `0.62`
+  - basket multiplier `0.95`
+  - return-rate boost `+3%`
+
+Special note for staffing:
+
+- `promo_week` increases work-log effort (`1.15×`)
+- `store_slump` decreases work-log effort (`0.85×`)
+
+This lets scenarios influence both topline KPIs and operating-cost behavior.
+
+---
+
+## What already exists for cost and profit analysis
+
+The schema now supports more than gross margin alone.
+
+Already available:
+
+- `Product.baseCost`
+- `OrderItem.unitCost`
+- `OrderItem.lineMargin`
+- `DailyStoreMetric.marginAmount`
+- `DailyStoreMetric.marginRate`
+- `Employee`, `EmployeeWorkLog`
+- `DailyStoreCost.staffCost`, `rentCost`, `otherCost`, `totalCost`, `staffHours`
+
+The dashboard currently derives:
+
+- operating cost
+- EBIT-like profit
+- cost ratio
+- revenue per staff hour
+
+Important convention:
+
+- profit is defined as `marginAmount - totalCost`, not `revenue - totalCost`
+
+---
+
+## What is not in the current schema yet
+
+Planned or discussed, but not implemented in `prisma/schema.prisma` yet:
+
+- `Store.state`
+- `StoreForecastConfig`
+- `WeatherObservation`
+- `SchoolHoliday`
+- `ExternalSignal`
+- `StoreForecast`
+- `ForecastJob`
+- auth-provider/session/account models beyond the current local `User`
+
+These exist as planned follow-up work in `.agentic/tasks/` and
+`.agentic/backlog.md`, not as live schema objects yet.
 
 ---
 
 ## Key constraints to keep in mind
 
-- **SQLite today, PostgreSQL later.** No JSON columns, no arrays, no RETURNING with
-  upsert tricks, no enum migration footguns.
-- **Seed is deterministic.** Adding new data structures means extending the seed
-  generator. Re-seeding wipes and rebuilds everything; that's acceptable for a demo.
-- **Pre-aggregation pattern.** Heavy reads go through `DailyStoreMetric` (pre-built
-  daily sums per store). OrderItem is granular ground truth but only 15% sampled.
-  Any new cost model should follow the same pre-aggregation pattern for query performance.
-- **Scenario system is the narrative engine.** New cost structures can optionally be
-  scenario-aware (e.g. a hiring surge scenario adds temp staff costs).
+- SQLite today, PostgreSQL later
+- seed is deterministic and can be rebuilt
+- top-level dashboard reads should prefer pre-aggregated daily facts
+- sampled order detail is for drilldowns, not the main KPI path
+- scenario data is part of the narrative layer, not just decoration
+- future schema discussions should clearly distinguish current schema from
+  planned-but-not-yet-merged task specs
