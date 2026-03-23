@@ -1,37 +1,102 @@
 # dashboard-one
 
-`dashboard-one` ist ein fruehes Dashboard-Projekt mit Fokus auf einem klaren, wartbaren Einstieg: zuerst ein einfacher lokaler Login und eine geschuetzte App-Shell, spaeter erweiterbar in Richtung OIDC, weitere Datenquellen und gecachte Integrationen.
+`dashboard-one` is a working retail BI dashboard demo and a reference project
+for evaluating agentic software development in a realistic codebase.
 
-Der Code soll bewusst klein, modular und gut weiterentwickelbar bleiben. Das Projekt dient gleichzeitig als Referenz dafuer, wie agentisches Coding in einem echten Entwicklungsalltag funktionieren kann.
+It is not just a scaffold anymore. The repository already contains:
 
-## Projektidee
+- a local credentials login with a protected app shell
+- a seeded retail analytics dashboard with KPI cards, charting, insights, and
+  store drilldowns
+- a controlling layer for profit, cost ratio, and staff productivity KPIs
+- an `/agentic` audit page that documents code volume, effort, and estimated
+  speedup from agent-supported development
+- a durable `.agentic/` workspace used to capture planning, decisions, backlog,
+  and workflow learnings
 
-- einfacher Einstieg ueber einen lokalen Login
-- geschuetzter Dashboard-Bereich als Basis fuer weitere Features
-- saubere Struktur fuer spaetere Auth-, Datenbank- und Integrations-Erweiterungen
-- lokale Persistenz und Caching als Grundlage fuer externe Datenquellen
+The product surface is a dashboard, but the broader purpose is methodological:
+this repo is meant to help evaluate which agentic workflows actually improve
+development speed and quality, and where they still create friction, ambiguity,
+or hidden costs.
 
-## Learnings und Projektnotizen
+## What This Project Is For
 
-Die laufenden Learnings aus dem Projekt werden in [.agentic/notes.md](.agentic/notes.md) gesammelt. Dort stehen vor allem Arbeitsnotizen, Beobachtungen aus der Umsetzung und Erkenntnisse zum agentischen Entwicklungsprozess.
+The repository serves two purposes at once:
 
-Weitere projektbezogene Kontexte liegen in:
+1. Build a maintainable dashboard application that can grow from local auth and
+   seeded demo data toward richer integrations, forecasting, and stronger
+   identity management.
+2. Act as a practical testbed for human-plus-agent delivery workflows:
+   planning, implementation, review, handoff, documentation, and context
+   management across interrupted work sessions.
 
-- [.agentic/project-context.md](.agentic/project-context.md)
-- [.agentic/decisions.md](.agentic/decisions.md)
-- [.agentic/backlog.md](.agentic/backlog.md)
+That makes it useful both as a software project and as a working reference for
+agentic development practice.
 
-## Technologie
+## Current Feature Set
 
-- Next.js mit App Router
+Implemented today:
+
+- local credentials login backed by a signed session cookie
+- protected routes under `src/app/(app)`
+- dashboard overview with:
+  - revenue, orders, basket, and conversion KPIs
+  - EBIT-like profit, operating cost, cost ratio, and revenue per staff hour
+  - revenue timeseries chart
+  - store ranking
+  - category performance
+  - top products
+  - explainable insight narratives
+  - scenario timeline
+- store detail pages with store-scoped KPIs, benchmarks, top products, and
+  insights
+- deterministic retail BI seed data in Prisma/SQLite
+- agentic audit page at `/agentic`
+- unit and component tests with Vitest and React Testing Library
+
+Visible but still intentionally incomplete:
+
+- `/users`
+- `/integrations`
+- `/settings`
+
+## Technology
+
+- Next.js App Router
 - TypeScript
+- React
 - Tailwind CSS
-- Prisma als ORM
-- SQLite als aktuelle Entwicklungsdatenbank
+- Prisma 7
+- SQLite
+- `better-sqlite3` Prisma adapter
+- Vitest + React Testing Library
+- Recharts
 
-Die Architektur ist so angelegt, dass spaeter ein Wechsel auf PostgreSQL und eine staerkere Auth-Loesung moeglich bleibt.
+The current architecture is intentionally simple, but leaves room for:
 
-## Lokaler Einstieg
+- PostgreSQL later
+- stronger auth or OIDC later
+- cached external data sources
+- forecasting and background execution flows
+
+## Why The Agentic Focus Matters
+
+This project is explicitly being used to evaluate agentic development under
+realistic conditions.
+
+Questions the repository is meant to help answer include:
+
+- Which tasks are good fits for implementer agents?
+- How much structure and specification do agents need to work well?
+- When is a fresh context better than continuing an old thread?
+- Which review workflows produce useful signal, and which mostly create noise?
+- How should durable context be captured so work can continue across short,
+  interrupted sessions?
+
+The `.agentic/` directory is part of that experiment, not incidental project
+clutter.
+
+## Local Setup
 
 ```bash
 npm install
@@ -43,51 +108,76 @@ npm run auth:seed-demo
 npm run dev
 ```
 
-Danach ist die App lokal unter [http://localhost:3000](http://localhost:3000) erreichbar.
+Then open [http://localhost:3000](http://localhost:3000).
 
-## Login fuer die lokale Entwicklung
+Useful commands:
 
-Fuer die lokale Entwicklung wird der Demo-User ueber die Werte in der lokalen `.env` angelegt.
+```bash
+npm run lint
+npm run typecheck
+npm run test
+npm run build
+```
 
-- E-Mail: `demo@example.com`
-- Passwort: siehe `DEMO_LOGIN_PASSWORD` in der lokalen `.env`
+## Local Login
 
-Die Werte kommen aus der lokalen `.env` bzw. `.env.example` und koennen bei Bedarf angepasst werden. Nach einer Aenderung der Demo-Credentials sollte `npm run auth:seed-demo` erneut ausgefuehrt werden.
+The demo user is seeded from your local `.env`.
 
-## Schnell deployen auf Railway
+- Email: `demo@example.com`
+- Password: see `DEMO_LOGIN_PASSWORD` in `.env`
 
-Fuer den aktuellen Stand des Projekts ist Railway der einfachste Weg, weil die App serverseitig laeuft und SQLite auf einer persistenten Volume weiterverwenden kann.
+If you change the demo credentials, run:
 
-### 1. Service anlegen
+```bash
+npm run auth:seed-demo
+```
 
-- Repository mit Railway verbinden
-- eine Volume mounten, zum Beispiel auf `/data`
+## Deployment Notes
 
-### 2. Environment Variables setzen
+For the current state of the project, Railway is the simplest hosting path.
+The app runs server-side and can continue using SQLite when the database file is
+kept on a persistent mounted volume.
+
+### Railway Setup
+
+1. Connect the repository to Railway.
+2. Mount a persistent volume, for example at `/data`.
+3. Set environment variables:
 
 ```bash
 DATABASE_URL=file:/data/app.db
-AUTH_SECRET=<lange-zufaellige-secret-zeichenkette>
+AUTH_SECRET=<long-random-secret>
 DEMO_LOGIN_EMAIL=demo@example.com
 DEMO_LOGIN_PASSWORD=ChangeMe123!
 ```
 
-`AUTH_SECRET` sollte mindestens 32 Zeichen lang sein.
+`AUTH_SECRET` should be at least 32 characters long.
 
-### 3. Build- und Start-Command
-
-Railway kann die Standardbefehle aus `package.json` verwenden:
+### Commands
 
 - Build: `npm run build`
 - Pre-deploy: `npm run railway:predeploy`
 - Start: `npm run railway:start`
 
-`postinstall` fuehrt automatisch `prisma generate` aus. `railway:predeploy` wendet die vorhandenen Prisma-Migrationen an. `railway:start` prueft vor dem Serverstart, ob das Demo bereits seeded ist, und fuehrt das Seed nur bei Bedarf aus.
+`postinstall` runs `prisma generate`. `railway:predeploy` applies migrations.
+`railway:start` can self-heal by applying migrations and seeding missing demo
+data before starting Next.js.
 
-### 4. Demo-User einmalig anlegen
+This setup is optimized for a simple demo deployment, not for long-term
+multi-instance production scale.
 
-Die Railway-Volume sollte fuer den ersten produktionsartigen Start eine frische SQLite-Datei verwenden, damit `prisma migrate deploy` das Schema sauber anlegen kann. Falls Railway den Pre-deploy-Schritt nicht wie erwartet vor dem ersten Request wirksam macht, ist der Start-Command absichtlich selbstheilend und holt Migration plus einmaliges Demo-Seed nach.
+## Project Context For Humans
 
-Mit dem gesetzten Pre-deploy-Schritt ist kein zusaetzlicher manueller Shell-Schritt noetig.
+The root `README.md` is the human-facing entry point. More detailed agent-aware
+project context lives in `.agentic/`.
 
-Danach ist die App mit den gesetzten Demo-Credentials erreichbar.
+Useful files there:
+
+- `.agentic/project-context.md` — current product and architecture context
+- `.agentic/decisions.md` — short ADR-style notes
+- `.agentic/backlog.md` — upcoming work and open questions
+- `.agentic/completed.md` — completed task log
+- `.agentic/notes.md` — working notes and workflow learnings
+
+If you want an LLM-ready briefing for feature or workflow discussions, see
+[`PROJECT_OVERVIEW.md`](./PROJECT_OVERVIEW.md).
