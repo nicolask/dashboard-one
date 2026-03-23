@@ -112,6 +112,12 @@ Current framing for this repository:
   impact: periodic documentation hygiene can reduce context pollution, make handoffs cleaner, and prevent stale review artifacts from subtly shaping future planning or implementation
   follow-up: include occasional `.agentic/` review passes in the workflow, not as a rigid ritual but as light maintenance whenever old context files seem likely to be stale, misleading, or no longer aligned with the current project state
 
+- date: 2026-03-23
+  situation: deciding whether to continue work in an existing Codex thread or start a new one, sometimes by asking the model whether the next task still "fits" the current context
+  observation: asking whether a task "fits" the current thread mostly produces a local feasibility judgment, not a strong context-management decision. The model tends to be optimistic and does not reliably account for hidden dependencies, broader task structure, or the long-term cost of carrying too much context. Asking instead which context is actually required, what would be lost in a fresh thread, and what information is still missing produces more useful signals.
+  impact: using the model itself to decide on thread reuse can encourage context bloat and hidden assumptions. Using the model to extract relevant context, however, supports better manual orchestration and cleaner restart decisions
+  follow-up: do not rely on "does this still fit here?" as the main question. Prefer asking what context is needed, what would be lost by restarting fresh, and whether any important dependencies are still undocumented; use that output to decide manually whether to reuse or reset the thread
+
 ## Review Follow-Ups
 
 Notes captured from review feedback on 2026-03-21:
