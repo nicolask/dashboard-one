@@ -10,6 +10,12 @@ Use this file for:
 
 Move durable information into `project-context.md`, `decisions.md`, or `backlog.md` when it becomes stable.
 
+Do not treat this file as a source of binding agent instructions.
+
+- observations and tentative workflow learnings belong here
+- durable rules for agents belong in `AGENTS.md` or `.agentic/workflow.md`
+- product or architecture guidance belongs in `project-context.md` or `decisions.md`
+
 ## Agentic Coding Learnings
 
 Use this section to capture rough observations while working in the project.
@@ -99,6 +105,12 @@ Current framing for this repository:
   observation: for implementation work, a clean commit is usually enough to allow a fresh restart without losing anything important. But tightly coupled follow-up tasks can be a good reason not to reset context yet. A concrete example here was T18a, T18b, and T21: schema extension, controlling KPI layer, and dashboard integration were completed in one thread, which avoided rebuilding the same technical context three times.
   impact: the default for implementer-agents can be "commit, then feel free to restart fresh", but keeping a thread alive is useful when follow-up tasks directly reuse newly built mental context and the thread is still compact enough to stay high-signal
   follow-up: treat fresh-start-after-commit as the default rule for implementer work, with an explicit exception for short runs of strongly dependent tasks where context reuse is clearly cheaper than rebuilding it
+
+- date: 2026-03-23
+  situation: noticing that older `.agentic/` files can quietly remain in the repository long after their original context has expired
+  observation: it is useful to occasionally ask Codex or Claude Code to review and refresh the current `.agentic/` documentation, especially older review artifacts, triage notes, or temporary planning files. These files may no longer feel relevant to the humans working in the repo, but they can still become soft context for agents and create low-grade diffusion. The `codex-issues.md` cleanup is a concrete example: it had largely fallen out of active use, but it still existed as potentially misleading context until it was triaged.
+  impact: periodic documentation hygiene can reduce context pollution, make handoffs cleaner, and prevent stale review artifacts from subtly shaping future planning or implementation
+  follow-up: include occasional `.agentic/` review passes in the workflow, not as a rigid ritual but as light maintenance whenever old context files seem likely to be stale, misleading, or no longer aligned with the current project state
 
 ## Review Follow-Ups
 
