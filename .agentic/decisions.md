@@ -110,6 +110,49 @@ This preserves the current low-friction demo architecture without forcing an ear
 
 For Railway specifically, the deploy flow is cleaner when migration runs in pre-deploy, but the start command should still be able to self-heal by applying migrations and seeding missing demo data before launching Next.js.
 
+## 2026-03-23
+
+### Forecast engine uses a strategy pattern with a per-store model registry
+
+The forecast engine (T23b) resolves the active prediction algorithm at runtime
+from a `StoreForecastConfig.modelSlug` field, via a central `getModel(slug)`
+registry. Adding a new model requires implementing `ForecastModel` and one line
+in the registry — no changes to the engine orchestrator, the execution layer,
+or any API route.
+
+This was chosen over a global config or per-run argument because per-store
+selection is the right granularity for a retail tool (different stores may have
+different data maturity), and the settings UI surface already exists as T22.
+
+### No message queue — execution path is a DB job table plus a direct function call
+
+The forecast execution layer (T23c) uses a `ForecastJob` table to track run
+state and calls the engine function directly from the API route. There is no
+background worker, no event bus, and no queue service.
+
+The seed calls the engine function directly (not via HTTP) using
+`triggeredBy: "seed"`. A standalone script (`scripts/run-forecasts.ts`) serves
+as the hook point for future automation.
+
+This was explicitly chosen to keep the evaluation focused on prediction logic,
+not infrastructure. The event flow is traceable through code and DB without
+requiring any running service beyond the Next.js app.
+
+### External API data is cached in the local DB, never fetched at request time
+
+Weather (Open-Meteo) and school holiday (ferien-api.de) data is fetched by a
+standalone refresh script and written to `WeatherObservation` / `SchoolHoliday`
+tables. The engine reads only from these tables. This is consistent with the
+existing `project-context.md` principle and avoids latency or rate-limit risk
+on dashboard reads.
+
+### `state` (Bundesland) added to `Store` separately from `region`
+
+`Store.region` ("Nord"/"Süd"/"Ost"/"West") is a business-defined sales zone
+and cannot be used to look up school holidays. A separate `state` field holds
+the two-letter Bundesland abbreviation (e.g. `"BY"`, `"NW"`). Both fields
+coexist — they answer different questions.
+
 ## 2026-03-22
 
 ### Insight cards are split into active and historical tiers with a 7-day threshold

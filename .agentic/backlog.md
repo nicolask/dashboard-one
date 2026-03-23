@@ -2,6 +2,18 @@
 
 ## Near Term
 
+### Forecast engine (T22 → T23a → T23b → T23c)
+
+- **T22** — Store settings surface: `Store.state` (Bundesland), `StoreForecastConfig` (per-store model slug + enabled flag), settings UI at `/settings`, PATCH API route
+- **T23a** — External signal schema & cache: `WeatherObservation`, `SchoolHoliday`, `ExternalSignal` tables; Open-Meteo + ferien-api.de fetch services; refresh script; user-curated signal form
+- **T23b** — Forecast engine core: `StoreForecast` table, `ForecastModel` strategy interface, `SimulatorModel`, `NaiveSeasonalModel`, model registry, engine orchestrator
+- **T23c** — Forecast execution layer: `ForecastJob` table, POST/GET API routes, per-store Run button in settings, seed trigger, `scripts/run-forecasts.ts`
+
+Follow-on (after T23c):
+- UI integration: show StoreForecast rows on the dashboard or a dedicated `/forecast` page
+- User-curated signal form linked from store settings row (scoped in T23a but UI placement TBD)
+- ML model implementation once real or sufficiently large synthetic data exists
+
 - add the first follow-on Prisma migration when new auth tables land instead of editing the initial migration in place
 - move font loading from CSS imports to `next/font`
 - introduce Playwright once login, redirects, and protected-route behavior are stable enough for end-to-end auth coverage
