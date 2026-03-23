@@ -94,6 +94,12 @@ Current framing for this repository:
   impact: a short "anything to retain before clear?" check can improve handoff quality in planning sessions, but used routinely it may create memory bloat and turn ephemeral discussion into pseudo-durable guidance
   follow-up: use this prompt selectively at the end of PO or roadmap discussions, not as a blanket ritual after every session; prefer writing durable context into `.agentic/` files first and only memorizing what would otherwise be lost
 
+- date: 2026-03-23
+  situation: reflecting on when an implementer-agent should continue in the same thread versus restart from a fresh one after a commit
+  observation: for implementation work, a clean commit is usually enough to allow a fresh restart without losing anything important. But tightly coupled follow-up tasks can be a good reason not to reset context yet. A concrete example here was T18a, T18b, and T21: schema extension, controlling KPI layer, and dashboard integration were completed in one thread, which avoided rebuilding the same technical context three times.
+  impact: the default for implementer-agents can be "commit, then feel free to restart fresh", but keeping a thread alive is useful when follow-up tasks directly reuse newly built mental context and the thread is still compact enough to stay high-signal
+  follow-up: treat fresh-start-after-commit as the default rule for implementer work, with an explicit exception for short runs of strongly dependent tasks where context reuse is clearly cheaper than rebuilding it
+
 ## Review Follow-Ups
 
 Notes captured from review feedback on 2026-03-21:
