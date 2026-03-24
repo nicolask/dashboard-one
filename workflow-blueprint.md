@@ -128,13 +128,41 @@ and relevant `.agentic/` updates in a single commit.
 
 ---
 
-## Planned Extensions
+## Task Lifecycle
 
-The following are not yet implemented but represent the intended next automation steps:
+Tasks move through the following states:
 
-**Task status field** — frontmatter `status: planned | in-progress | review-requested | review-done | closed` to make pipeline state explicit and queryable.
+```
+planned -> in-progress -> review-requested -> review-done -> closed
+```
 
-**Task complexity field** — frontmatter `complexity: micro | standard | exploration`. Micro tasks may skip the plan step; exploration tasks may require a discovery phase before a full spec can be written.
+- `planned`: spec exists and is ready for implementer pickup
+- `in-progress`: implementer has accepted the task and is actively planning or coding
+- `review-requested`: implementer considers the task ready; handed off with enough context to review efficiently
+- `review-done`: reviewer has completed the pass and recorded findings or follow-up notes
+- `closed`: human orchestrator considers the task complete; durable context updated
+
+If review finds issues to fix, the task returns from `review-requested` or `review-done` to `in-progress`.
+
+To close a task: finish the review pass → record follow-ups in backlog → update the task file to `closed` → add a completion entry to `completed.md` → include context updates with the final commit.
+
+---
+
+## Task Metadata
+
+Task specs carry frontmatter fields to make workflow state explicit:
+
+**Status field**
+```
+status: planned | in-progress | review-requested | review-done | closed
+```
+
+**Complexity field**
+```
+complexity: micro | standard | exploration
+```
+
+`micro` tasks may skip the plan step. `exploration` tasks may require a discovery phase before a full spec can be written.
 
 ---
 
