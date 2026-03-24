@@ -4,6 +4,12 @@ This repository is worked in a split-agent mode with a human orchestrator coordi
 
 The default entry point for a new task is a short instruction such as `Plan T24`. That prompt is expected to be sufficient because the durable task context lives in `.agentic/` and the role responsibilities below define the rest of the workflow.
 
+## Design Principle
+
+**Orchestrator prompts are intentionally dumb. Complexity lives in files, not in instructions.**
+
+The human orchestrator passes short, directive prompts — not context-laden paragraphs. All stable context (task specs, decisions, architecture, backlog) is maintained in `.agentic/` so that any agent can pick up work with minimal instruction. If a prompt needs to be long to be understood, that is a signal that something is missing from the durable files, not that the prompt should be longer.
+
 ## Roles
 
 - `planner/reviewer`: shapes tasks, reviews outcomes, records follow-up work, and may fix very small issues directly when that is faster than handing them back
