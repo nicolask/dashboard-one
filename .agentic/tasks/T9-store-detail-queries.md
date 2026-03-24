@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: micro
+---
+
 # T9 – KPI Layer: Store-scoped queries + benchmark
 
 ## Context

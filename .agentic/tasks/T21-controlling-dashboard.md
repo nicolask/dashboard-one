@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T21 – Controlling Dashboard Integration
 
 ## Context

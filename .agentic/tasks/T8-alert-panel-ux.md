@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T8 – Alert Panel UX: Collapsible + Pretty Labels
 
 ## Context

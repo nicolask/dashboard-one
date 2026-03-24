@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T15 – Scenario Timeline Strip
 
 ## Context

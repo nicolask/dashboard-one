@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T19 – Insight Narrative Tiering
 
 ## Context

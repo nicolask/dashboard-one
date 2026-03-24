@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T14 – Extended Store Benchmarking
 
 ## Status

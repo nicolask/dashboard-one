@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: micro
+---
+
 # T11 – Placeholder Routes for Nav Items
 
 ## Context

@@ -1,3 +1,8 @@
+---
+status: planned
+complexity: exploration
+---
+
 # T23b – Forecast Engine Core
 
 ## Context

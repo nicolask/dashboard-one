@@ -1,3 +1,8 @@
+---
+status: planned
+complexity: standard
+---
+
 # T23c – Forecast Execution Layer
 
 ## Context

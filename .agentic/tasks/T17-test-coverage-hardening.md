@@ -1,4 +1,9 @@
-# T13 – Test Coverage Hardening Before Seed + Controlling Expansion
+---
+status: closed
+complexity: standard
+---
+
+# T17 – Test Coverage Hardening Before Seed + Controlling Expansion
 
 ## Context
 

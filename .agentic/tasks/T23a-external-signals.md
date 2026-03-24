@@ -1,3 +1,8 @@
+---
+status: planned
+complexity: standard
+---
+
 # T23a – External Signal Schema & Cache
 
 ## Context

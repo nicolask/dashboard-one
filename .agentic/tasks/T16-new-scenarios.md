@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: micro
+---
+
 # T16 – New Seed Scenarios
 
 ## Context

@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T18a – Controlling Layer: Schema, Migration, Seed
 
 ## Context

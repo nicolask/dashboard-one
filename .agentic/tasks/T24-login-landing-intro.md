@@ -1,3 +1,8 @@
+---
+status: planned
+complexity: standard
+---
+
 # T24 – Login as Landing Page with Intro Content
 
 ## Context

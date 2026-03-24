@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T10 – Store Detail Page
 
 ## Context

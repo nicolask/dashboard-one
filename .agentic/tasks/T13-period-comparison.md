@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T13 – Period Comparison
 
 ## Context

@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T12 – Explainable Insights (AlertPanel → InsightPanel)
 
 ## Context

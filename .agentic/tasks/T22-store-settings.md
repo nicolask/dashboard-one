@@ -1,3 +1,8 @@
+---
+status: planned
+complexity: standard
+---
+
 # T22 – Store Settings Surface
 
 ## Context

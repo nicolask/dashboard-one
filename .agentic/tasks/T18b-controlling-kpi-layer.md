@@ -1,3 +1,8 @@
+---
+status: closed
+complexity: standard
+---
+
 # T18b – Controlling KPI Layer: Cost Queries and Profit Calculation
 
 ## Context
