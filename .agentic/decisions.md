@@ -110,6 +110,14 @@ This preserves the current low-friction demo architecture without forcing an ear
 
 For Railway specifically, the deploy flow is cleaner when migration runs in pre-deploy, but the start command should still be able to self-heal by applying migrations and seeding missing demo data before launching Next.js.
 
+## 2026-03-24
+
+### Browser automation for agents lives in a standalone MCP stdio tool
+
+Added a separate `tools/mcp-browser` Node/TypeScript package that exposes Chromium automation over a minimal MCP server running on stdio, instead of folding browser control into the Next.js app or its API routes.
+
+This keeps infrastructure concerns isolated from product code, gives agents a stable browser capability with a small and explicit tool surface, and avoids coupling Playwright/runtime lifecycle logic to the web application. The tradeoff is one extra package to install and run, but that separation is intentional and reversible.
+
 ## 2026-03-23
 
 ### `/` redirects to `/login`; login page doubles as product landing

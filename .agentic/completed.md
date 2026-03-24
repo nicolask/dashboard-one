@@ -19,3 +19,8 @@ Reference log of finished work. Not needed in active context — check here when
 - **T19** — insight narratives tiered into active vs. historical context; insight cards now carry explicit date ranges and tense-aware wording to disambiguate current alerts from concluded scenarios
 - **T21** — controlling dashboard integration: P&L card row (EBIT-like Profit, Operating Cost, Cost Ratio, Rev/Staff Hour) added to overview and store detail pages; `getCostKpis` provides period-over-period deltas; cost metrics use inverted delta sign so rising costs show as negative
 - **T20** — Agentic Audit page at `/agentic`: LOC breakdown, time estimates, speedup comparison, conditions/Einordnung; `snapshot-data.ts` as single update point; three agentic KPI tiles on main dashboard; LOC snapshot SOP at `.agentic/prompts/loc-snapshot.md`
+## 2026-03-24
+
+- Added a standalone `tools/mcp-browser` MCP stdio server with lazy Playwright Chromium control, DOM/screenshot/eval/click/type tools, console log capture, and optional network/reset helpers.
+- Expanded the browser MCP tool for local UI debugging with responsive viewport control, selector waiting, computed-style inspection, relative-path support via a localhost base URL, and a dedicated tool README.
+- Added reusable browser-debug prompt templates under `.agentic/prompts/` for focused UI review, KPI-card evaluation, and spacing diagnostics with the local MCP browser server.
